@@ -21,7 +21,7 @@ interface UserPayload extends JWTPayload {
     role?: "student" | "warden" | "admin" | "canteen manager";
 }
 
-export default function AppSidebar({ items, user }: { items: { title: string; url: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[], user : UserPayload }) {
+export default function AppSidebar({ items, user }: { items: { title: string; url: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[], user: UserPayload }) {
     return (
         <Sidebar>
             <SidebarContent>
@@ -44,16 +44,20 @@ export default function AppSidebar({ items, user }: { items: { title: string; ur
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <div className="py-6 flex items-center justify-start gap-4 px-8">
-                    <Avatar className="rounded-lg text-3xl">
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <div className="flex items-start flex-col">
-                        <p className="font-bold">{user.usn_id}</p>
-                        <p>{user.role}</p>
-                    </div>
-                </div>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                            <div className="py-6 flex items-center justify-start gap-4 px-8">
+                                <Avatar className="rounded-lg text-3xl">
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                                <p className="font-bold text-lg">{user.usn_id}</p>
+                                <p className="text-sm">{user.role?.charAt(0).toUpperCase()}{user.role?.slice(1)}</p>
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarFooter>
         </Sidebar>
     )

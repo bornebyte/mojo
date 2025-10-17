@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import AppSidebar from "@/components/app-sidebar"
-import { Calendar, Home, UserPlus, Search, Settings, LucideProps } from "lucide-react"
+import { Calendar, Home, UserPlus, Search, Settings, LucideProps, UserPen } from "lucide-react"
 import { cookies } from "next/headers"
 import { JWTPayload, jwtVerify } from "jose"
 import { ForwardRefExoticComponent, RefAttributes } from "react"
@@ -11,6 +11,11 @@ const adminItems = [
         title: "Home",
         url: "#",
         icon: Home,
+    },
+    {
+        title: "Manage Members",
+        url: "/dashboard/admin/manage-members",
+        icon: UserPen,
     },
     {
         title: "Add Member",
