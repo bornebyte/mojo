@@ -13,6 +13,7 @@ import { LucideProps } from "lucide-react";
 import { ForwardRefExoticComponent, RefAttributes } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { JWTPayload } from "jose";
+import Link from "next/link";
 
 
 interface UserPayload extends JWTPayload {
@@ -32,10 +33,10 @@ export default function AppSidebar({ items, user }: { items: { title: string; ur
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <a href={item.url}>
+                                        <Link href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}

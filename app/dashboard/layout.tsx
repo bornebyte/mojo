@@ -9,7 +9,7 @@ import { ForwardRefExoticComponent, RefAttributes } from "react"
 const adminItems = [
     {
         title: "Home",
-        url: "#",
+        url: "/dashboard/admin",
         icon: Home,
     },
     {
@@ -162,7 +162,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <SidebarProvider>
             <AppSidebar items={items} user={user} />
             <SidebarTrigger />
-            <main className="w-full flex justify-center">
+            <main className="w-full flex justify-center py-12 px-4">
                 {children}
             </main>
         </SidebarProvider>
