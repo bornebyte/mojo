@@ -9,45 +9,27 @@ export async function createUserTable() {
     throw new Error("DATABASE_URL is not set");
   }
   const sql = neon(process.env.DATABASE_URL);
+
   const data = await sql`CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       name VARCHAR(255),
-      email VARCHAR(255),
+      email VARCHAR(255) UNIQUE,
       phone VARCHAR(20),
       password VARCHAR(255),
-      role VARCHAR(50),
+      role VARCHAR(255) DEFAULT 'admin',
       usn_id VARCHAR(50) UNIQUE,
-      verified BOOLEAN DEFAULT false,
+      added_by_name VARCHAR(255),
+      added_by_id VARCHAR(50),
+      added_by_role VARCHAR(255),
+      status VARCHAR(255) DEFAULT 'inactive',
+      hold_reason TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`;
-  // const dateInIST = new Date(createdAtUTC).toLocaleString("en-IN", {
-  //   timeZone: "Asia/Kolkata"
-  // });
   return data;
 }
 
-export const createUser = async (name: string, email: string, phone: string, password: string, role: string, usn_id: string) => {
-  await createUserTable()
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set");
-  }
-  const sql = neon(process.env.DATABASE_URL);
-  const existingusn_id = await sql`SELECT usn_id FROM users WHERE usn_id = ${usn_id}`;
-  if (existingusn_id.length > 0) {
-    return "User already exists";
-  }
-  var encryptedPassword = AES.encrypt(password, process.env.SECRET_KEY).toString();
-  const result = await sql`
-    INSERT INTO users (name, email, phone, password, role, usn_id)
-    VALUES (${name}, ${email}, ${phone}, ${encryptedPassword}, ${role}, ${usn_id})
-    RETURNING usn_id;
-  `;
-  return "User created successfully";
-}
-
-
 export const loginUser = async (usn_id: string, password: string, role: string) => {
-  await createUserTable()
+  await createUserTable();
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is not set");
   }
@@ -55,6 +37,9 @@ export const loginUser = async (usn_id: string, password: string, role: string) 
   const existingUser = await sql`SELECT * FROM users WHERE usn_id = ${usn_id} AND role = ${role}`;
   if (existingUser.length === 0) {
     return { message: "User does not exist", loginstatus: false };
+  }
+  if (!process.env.SECRET_KEY) {
+    throw new Error("SECRET_KEY is not set");
   }
   const decryptedPassword = AES.decrypt(existingUser[0].password, process.env.SECRET_KEY).toString(enc.Utf8);
   if (decryptedPassword !== password && existingUser[0].role == role) {

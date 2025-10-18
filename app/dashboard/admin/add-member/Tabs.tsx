@@ -1,7 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AddAdminForm from "./addAdminForm"
+import type { UserPayload } from "@/lib/types"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
+import AddCanteenManagerForm from "./addCanteenMemberForm"
+import AddWardenForm from "./addWardenForm"
+import AddStudentForm from "./addStudentsForm"
 
 const AddMemberTabsComponent = async () => {
     const cookiestore = await cookies()
@@ -11,7 +15,7 @@ const AddMemberTabsComponent = async () => {
     }
     const secret = new TextEncoder().encode(process.env.JWT_SECRET)
     const { payload } = await jwtVerify(token, secret)
-    const user = payload as { usn_id: string; role: string; name: string; email: string }
+    const user = payload as UserPayload
     return (
         <div>
             <Tabs defaultValue="student" className="w-[400px]">
@@ -21,9 +25,15 @@ const AddMemberTabsComponent = async () => {
                     <TabsTrigger value="canteen">Canteen Manager</TabsTrigger>
                     <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
-                <TabsContent value="student">Make changes to your account here.</TabsContent>
-                <TabsContent value="warden">Change your password here.</TabsContent>
-                <TabsContent value="canteen">Make changes to your account here.</TabsContent>
+                <TabsContent value="student">
+                    <AddStudentForm user={user} />
+                </TabsContent>
+                <TabsContent value="warden">
+                    <AddWardenForm user={user} />
+                </TabsContent>
+                <TabsContent value="canteen">
+                    <AddCanteenManagerForm user={user} />
+                </TabsContent>
                 <TabsContent value="admin">
                     <AddAdminForm user={user} />
                 </TabsContent>

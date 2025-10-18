@@ -2,7 +2,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import AppSidebar from "@/components/app-sidebar"
 import { Calendar, Home, UserPlus, Search, Settings, LucideProps, UserPen } from "lucide-react"
 import { cookies } from "next/headers"
-import { JWTPayload, jwtVerify } from "jose"
+import type { UserPayload } from "@/lib/types"
+import { jwtVerify } from "jose"
 import { ForwardRefExoticComponent, RefAttributes } from "react"
 
 // Sidebar Menu items.
@@ -122,20 +123,12 @@ const wardenItems = [
     },
 ]
 
-
-interface UserPayload extends JWTPayload {
-    name?: string;
-    usn_id?: string;
-    role?: "student" | "warden" | "admin" | "canteen manager";
-}
-
-
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     var user: UserPayload = {};
     var items: { title: string; url: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[] = []
     const cookie = await cookies()
     const token = cookie.get("token")
-    if (token) {
+    if (token && token.value) {
         const { payload } = await jwtVerify(
             token.value,
             new TextEncoder().encode(process.env.JWT_SECRET)

@@ -6,7 +6,7 @@ export async function middleware(request: any) {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value;
 
-    if (token) {
+    if (token && token.length > 0) {
         try {
             const secret = new TextEncoder().encode(process.env.JWT_SECRET);
             await jwtVerify(token, secret);
@@ -17,8 +17,7 @@ export async function middleware(request: any) {
             return NextResponse.redirect(new URL('/login', request.url));
         }
     }
-    const cookie = cookieStore.has("token");
-    if (request.nextUrl.pathname.startsWith('/dashboard') && !cookie) {
+    if (request.nextUrl.pathname.startsWith('/dashboard') && !token) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 

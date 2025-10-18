@@ -34,7 +34,7 @@ const formSchema = z.object({
     }),
 })
 
-export default function AddAdminForm({ user }: { user: UserPayload }) {
+export default function AddCanteenManagerForm({ user }: { user: UserPayload }) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -47,12 +47,11 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user.name || !user.usn_id || !user.role) {
-            toast.error("User name or usn_id is missing from JWT payload. Cannot create admin.");
+            toast.error("User name or usn_id is missing from JWT payload. Cannot create canteen manager account.");
             console.error("User name or usn_id is missing from JWT payload:", user);
             return;
         }
-        // For admins, usn_id can be the email or another unique identifier. Here we pass the email.
-        const res = await createUser(values.username, values.email, values.phone, values.password, 'admin', values.email, user.name, user.usn_id, user.role);
+        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -63,7 +62,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
 
     return (
         <Form {...form}>
-            <p className="text-center text-2xl font-bold mt-6">Add Admin</p>
+            <p className="text-center text-2xl font-bold mt-6">Add Canteen Manager</p>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}
@@ -72,7 +71,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
                         <FormItem>
                             <FormLabel>Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="Admin name here..." {...field} />
+                                <Input placeholder="Canteen Manager name here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -85,7 +84,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
                         <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                                <Input type="password" placeholder="Admin password here..." {...field} />
+                                <Input type="password" placeholder="Canteen Manager password here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -98,7 +97,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
                         <FormItem>
                             <FormLabel>Email</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="Admin email here..." {...field} />
+                                <Input type="email" placeholder="Canteen Manager email here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -111,7 +110,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
                         <FormItem>
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
-                                <Input type="text" placeholder="Admin phone number here..." {...field} />
+                                <Input type="text" placeholder="Canteen Manager phone number here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
