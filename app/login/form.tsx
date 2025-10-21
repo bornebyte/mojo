@@ -46,7 +46,7 @@ export function LoginForm() {
         defaultValues: {
             username: "",
             password: "",
-            role: "student",
+            role: "admin",
         },
     })
 

@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import AppSidebar from "@/components/app-sidebar"
-import { Calendar, Home, UserPlus, Search, Settings, LucideProps, UserPen } from "lucide-react"
+import { Calendar, Home, UserPlus, Search, Settings, LucideProps, UserPen, Building } from "lucide-react"
 import { cookies } from "next/headers"
 import type { UserPayload } from "@/lib/types"
 import { jwtVerify } from "jose"
@@ -24,19 +24,9 @@ const adminItems = [
         icon: UserPlus,
     },
     {
-        title: "Calendar",
-        url: "#",
-        icon: Calendar,
-    },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
+        title: "Manage Buildings",
+        url: "/dashboard/admin/manage-buildings",
+        icon: Building,
     },
 ]
 
