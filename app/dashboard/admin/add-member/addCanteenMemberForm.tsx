@@ -62,7 +62,7 @@ export default function AddCanteenManagerForm({ user }: { user: UserPayload }) {
 
     return (
         <Form {...form}>
-            <p className="text-center text-2xl font-bold mt-6">Add Canteen Manager</p>
+            <p className="text-center text-xl font-bold mt-6 mb-6">Create Canteen Manager Account</p>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                     control={form.control}

@@ -145,7 +145,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <SidebarProvider>
             <AppSidebar items={items} user={user} />
             <SidebarTrigger />
-            <main className="w-full flex justify-center py-12 px-4">
+            <main className="w-full flex justify-center py-12 px-2">
                 {children}
             </main>
         </SidebarProvider>

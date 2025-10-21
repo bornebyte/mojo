@@ -18,7 +18,7 @@ const AddMemberTabsComponent = async () => {
     const user = payload as UserPayload
     return (
         <div>
-            <Tabs defaultValue="student" className="w-[400px]">
+            <Tabs defaultValue="student" className="w-full md:w-[400px]">
                 <TabsList className="w-full">
                     <TabsTrigger value="student">Student</TabsTrigger>
                     <TabsTrigger value="warden">Warden</TabsTrigger>

@@ -61,17 +61,22 @@ export function LoginForm() {
     }
 
     return (
-        <div className="w-full h-[80vh] flex items-center justify-center">
+        <div className="w-full h-[80vh] p-4 flex items-center justify-center py-6 relative">
+            <div className="text-center absolute top-10">
+                <h1 className="text-4xl font-bold">Mojo</h1>
+                <p className="text-gray-600">Login to your account</p>
+            </div>
+            
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-96">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-96">
                     <FormField
                         control={form.control}
                         name="username"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>USN ID</FormLabel>
+                                <FormLabel>Email or USN ID</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="JUUGI2025....." {...field} />
+                                    <Input placeholder="Email or USN ID" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

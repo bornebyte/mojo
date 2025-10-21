@@ -85,7 +85,7 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
         }));
         setFloorPlans(plans);
 
-        const newRooms: { roomName: string, bedCount: number, status: "Available" | "Maintenance" }[] = [];
+        const newRooms: { roomName: string, bedCount: number, status: "Available" | "Maintenance" | "Unavailable" }[] = [];
         for (const plan of plans) {
             for (let i = 0; i < plan.roomCount; i++) {
                 newRooms.push({
@@ -102,7 +102,7 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
     }
 
     return (
-        <div className="w-[450px] max-w-2xl">
+        <div className="w-full md:w-[450px] max-w-2xl">
             <Form {...form} >
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <Card>
