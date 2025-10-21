@@ -2,7 +2,7 @@ import React from 'react'
 import ManageBuildingsForm from './ManageBuildingsForm'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getUserFromToken } from '@/app/functions'
-import { Buildings, UserPayload } from '@/lib/types'
+import { UserPayload } from '@/lib/types'
 import { BuildingsTable } from './viewBuildings'
 import { getBuildings } from './actions'
 
