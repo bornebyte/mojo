@@ -36,7 +36,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-type BuildingData = {
+export type BuildingData = {
     building_id: number;
     building_name: string;
     added_by_name: string;
@@ -155,7 +155,7 @@ export const columns: ColumnDef<BuildingData>[] = [
     },
 ]
 
-export function BuildingsTable({ data }: { data: any[] }) {
+export function BuildingsTable({ data }: { data: BuildingData[] }) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []

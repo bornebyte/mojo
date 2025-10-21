@@ -86,7 +86,6 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
         setFloorPlans(plans);
 
         const newRooms: { roomName: string, bedCount: number, status: "Available" | "Maintenance" | "Unavailable" }[] = [];
-        let roomOffset = 0;
         for (const plan of plans) {
             for (let i = 0; i < plan.roomCount; i++) {
                 newRooms.push({
@@ -95,7 +94,6 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
                     status: "Available" as const,
                 });
             }
-            roomOffset += plan.roomCount;
         }
 
         form.setValue("rooms", newRooms);
@@ -171,7 +169,7 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
                                         )}
                                     />
                                 ))}
-                                <Button type="button" onClick={handleDefineRooms}>Define Room Details</Button>
+                                <Button type="button" onClick={handleDefineRooms}><Bed />Define Room Details</Button>
                             </CardContent>
                         </Card>
                     )}

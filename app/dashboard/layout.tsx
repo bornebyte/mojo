@@ -114,8 +114,8 @@ const wardenItems = [
 ]
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-    var user: UserPayload = {};
-    var items: { title: string; url: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[] = []
+    let user: UserPayload = {};
+    let items: { title: string; url: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; }[] = []
     const cookie = await cookies()
     const token = cookie.get("token")
     if (token && token.value) {

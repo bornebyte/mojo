@@ -5,11 +5,11 @@ import {
   UserCheck,
   ArrowRight,
   Quote,
-  Star,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -24,7 +24,7 @@ export default function Home() {
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
                   Mojo provides a seamless and efficient solution for managing
-                  your hostel. From student records to meal tracking, we've got
+                  your hostel. From student records to meal tracking, we&apos;ve got
                   you covered.
                 </p>
               </div>
@@ -37,12 +37,12 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <img
-              src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=2070&auto=format&fit=crop"
-              width="550"
-              height="550"
+            <Image
+              src={"/dummy.avif"}
+              width={550}
+              height={550}
               alt="Hostel"
-              className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
+              className="mx-auto w-full h-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
             />
           </div>
         </div>
@@ -118,9 +118,9 @@ export default function Home() {
               <CardContent>
                 <Quote className="mb-4 h-6 w-6 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  "Mojo has revolutionized how we manage attendance and student
-                  records. It's intuitive, fast, and has saved us countless
-                  hours of paperwork."
+                  &quot;Mojo has revolutionized how we manage attendance and student
+                  records. It&apos;s intuitive, fast, and has saved us countless
+                  hours of paperwork.&quot;
                 </p>
               </CardContent>
             </Card>
@@ -139,9 +139,9 @@ export default function Home() {
               <CardContent>
                 <Quote className="mb-4 h-6 w-6 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  "Checking the daily menu and my attendance has never been
+                  &quot;Checking the daily menu and my attendance has never been
                   easier. The interface is clean and super easy to navigate. A
-                  must-have for any modern hostel!"
+                  must-have for any modern hostel!&quot;
                 </p>
               </CardContent>
             </Card>
@@ -160,9 +160,9 @@ export default function Home() {
               <CardContent>
                 <Quote className="mb-4 h-6 w-6 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  "Planning and publishing the weekly menu is a breeze with
+                  &quot;Planning and publishing the weekly menu is a breeze with
                   Mojo. The feedback system has also helped us improve our
-                  service significantly."
+                  service significantly.&quot;
                 </p>
               </CardContent>
             </Card>
@@ -176,7 +176,7 @@ export default function Home() {
               Ready to Simplify Your Hostel Management?
             </h2>
             <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Get started for free and see how Mojo can transform your hostel's
+              Get started for free and see how Mojo can transform your hostel&apos;s
               operations.
             </p>
           </div>

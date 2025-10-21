@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cookies } from "next/headers"
-import { jwtVerify, type JWTPayload } from "jose"
+import { jwtVerify } from "jose"
 import { ModeToggle } from "@/components/theme-toggle"
 import type { UserPayload } from "@/lib/types"
 import AuthButtons from "./AuthButtons"
@@ -10,7 +10,7 @@ import AuthButtons from "./AuthButtons"
 const NavigationMenuComponent = async () => {
   let isLoggedIn: boolean = false
   let user: UserPayload = {};
-  let cookie = await cookies()
+  const cookie = await cookies()
   const token = cookie.get("token")
   if (token && token.value) {
     try {
@@ -19,6 +19,7 @@ const NavigationMenuComponent = async () => {
       user = payload
     } catch (error) {
       // Token is invalid, treat as not logged in
+      console.error("Invalid token:", error)
       isLoggedIn = false
     }
   }
