@@ -1,6 +1,6 @@
 "use server"
 
-import { UserPayload } from "@/lib/types";
+import { UserPayload, BuildingData } from "@/lib/types";
 import { neon, NeonQueryFunction, NeonQueryPromise } from "@neondatabase/serverless";
 import { BuildingFormValues } from "./ManageBuildingsForm";
 
@@ -77,7 +77,7 @@ export async function createBuilding(values: BuildingFormValues, user: UserPaylo
     }
 }
 
-export async function getBuildings() {
+export async function getBuildings(): Promise<BuildingData[]> {
     const sql = neon(process.env.DATABASE_URL!);
     await createBuildingTables(sql);
 
@@ -114,5 +114,5 @@ export async function getBuildings() {
         ORDER BY b.created_at DESC
     `;
 
-    return buildings;
+    return buildings as BuildingData[];
 }

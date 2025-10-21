@@ -85,7 +85,7 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
         }));
         setFloorPlans(plans);
 
-        const newRooms: { roomName: string, bedCount: number, status: "Available" | "Maintenance" | "Unavailable" }[] = [];
+        const newRooms: { roomName: string, bedCount: number, status: "Available" | "Maintenance" }[] = [];
         for (const plan of plans) {
             for (let i = 0; i < plan.roomCount; i++) {
                 newRooms.push({
