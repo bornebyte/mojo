@@ -3,30 +3,7 @@ import { neon } from "@neondatabase/serverless";
 import { AES, enc } from "crypto-js";
 import { SignJWT } from 'jose';
 import { cookies } from "next/headers";
-
-export async function createUserTable() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set");
-  }
-  const sql = neon(process.env.DATABASE_URL);
-
-  const data = await sql`CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255),
-      email VARCHAR(255) UNIQUE,
-      phone VARCHAR(20),
-      password VARCHAR(255),
-      role VARCHAR(255) DEFAULT 'admin',
-      usn_id VARCHAR(50) UNIQUE,
-      added_by_name VARCHAR(255),
-      added_by_id VARCHAR(50),
-      added_by_role VARCHAR(255),
-      status VARCHAR(255) DEFAULT 'inactive',
-      hold_reason TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );`;
-  return data;
-}
+import { createUserTable } from "@/app/dashboard/admin/add-member/action";
 
 export const loginUser = async (usn_id: string, password: string, role: string) => {
   await createUserTable();

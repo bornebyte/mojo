@@ -1,13 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AddAdminForm from "./addAdminForm"
-import type { UserPayload } from "@/lib/types"
+import type { AvailableBuildingsAndFloors, UserPayload } from "@/lib/types"
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
 import AddCanteenManagerForm from "./addCanteenMemberForm"
 import AddWardenForm from "./addWardenForm"
 import AddStudentForm from "./addStudentsForm"
+import { getAvailableBuildingsAndFloors } from "./action"
 
 const AddMemberTabsComponent = async () => {
+    const { buildings: availableBuildingsAndFloors, assignedWardenFloors, assignedStudentRooms } = await getAvailableBuildingsAndFloors();
     const cookiestore = await cookies()
     const token = cookiestore.get("token")?.value
     if (!token) {
@@ -26,13 +28,13 @@ const AddMemberTabsComponent = async () => {
                     <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
                 <TabsContent value="student">
-                    <AddStudentForm user={user} />
+                    <AddStudentForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedStudentRooms={assignedStudentRooms} />
                 </TabsContent>
                 <TabsContent value="warden">
-                    <AddWardenForm user={user} />
+                    <AddWardenForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedWardenFloors={assignedWardenFloors} assignedStudentRooms={assignedStudentRooms} />
                 </TabsContent>
                 <TabsContent value="canteen">
-                    <AddCanteenManagerForm user={user} />
+                    <AddCanteenManagerForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedStudentRooms={assignedStudentRooms} />
                 </TabsContent>
                 <TabsContent value="admin">
                     <AddAdminForm user={user} />

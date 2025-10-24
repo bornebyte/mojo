@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -16,8 +17,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { CirclePlus } from "lucide-react"
 import { createUser } from "./action"
-import { toast } from "sonner"
-import type { UserPayload } from "@/lib/types"
+import { toast } from "sonner";
+import type { AvailableBuildingsAndFloors, UserPayload } from "@/lib/types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const formSchema = z.object({
     username: z.string().min(2, {
@@ -32,9 +34,14 @@ const formSchema = z.object({
     email: z.string().email({
         message: "Invalid email address.",
     }),
+    allocated_building: z.string().min(1, { message: "Building is required." }),
+    allocated_room: z.string().min(1, { message: "Room is required." }),
 })
 
-export default function AddCanteenManagerForm({ user }: { user: UserPayload }) {
+export default function AddCanteenManagerForm({ user, availableBuildingsAndFloors, assignedStudentRooms }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[], assignedStudentRooms: { room_id: number }[] }) {
+    const [selectedAllocatedBuilding, setSelectedAllocatedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
+    const assignedStudentRoomIds = assignedStudentRooms.map(r => r.room_id);
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -42,16 +49,27 @@ export default function AddCanteenManagerForm({ user }: { user: UserPayload }) {
             password: "",
             phone: "",
             email: "",
+            allocated_building: "",
+            allocated_room: "",
         },
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user.name || !user.usn_id || !user.role) {
-            toast.error("User name or usn_id is missing from JWT payload. Cannot create canteen manager account.");
+            toast.error("User name or usn_id is missing from JWT payload. Cannot create account.");
             console.error("User name or usn_id is missing from JWT payload:", user);
             return;
         }
-        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role);
+
+        const building = availableBuildingsAndFloors.find(b => b.name === values.allocated_building);
+        const room = building?.floors.flatMap(f => f.rooms).find(r => r.name === values.allocated_room);
+
+        if (!room) {
+            toast.error("Selected room not found. Please try again.");
+            return;
+        }
+
+        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role, room.id);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -111,6 +129,58 @@ export default function AddCanteenManagerForm({ user }: { user: UserPayload }) {
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
                                 <Input type="text" placeholder="Canteen Manager phone number here..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="allocated_building"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Accommodation Building</FormLabel>
+                            <FormControl>
+                                <Select onValueChange={(value) => {
+                                    field.onChange(value);
+                                    const building = availableBuildingsAndFloors.find(b => b.name === value) || null;
+                                    setSelectedAllocatedBuilding(building);
+                                    form.setValue('allocated_room', "");
+                                }}
+                                    value={field.value}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Choose a building" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building) => (
+                                            <SelectItem key={building.id} value={building.name}>
+                                                {building.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="allocated_room"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Accommodation Room</FormLabel>
+                            <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedAllocatedBuilding}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Choose a room" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectedAllocatedBuilding && selectedAllocatedBuilding.floors.flatMap(floor => (floor as any).rooms).map((room: any) => (
+                                            !assignedStudentRoomIds.includes(room.id) && <SelectItem key={room.id} value={room.name}>{room.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
