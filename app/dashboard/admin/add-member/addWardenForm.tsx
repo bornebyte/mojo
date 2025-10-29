@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { CirclePlus } from "lucide-react"
 import { toast } from "sonner";
 import type { AvailableBuildingsAndFloors, UserPayload } from "@/lib/types"
-import { createUser } from "./action"
+import { createUser, getAvailableFloorsForWarden, getAvailableRooms } from "./action"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const formSchema = z.object({
@@ -36,18 +36,18 @@ const formSchema = z.object({
         message: "Invalid email address.",
     }),
     allocated_building: z.string().optional(),
+    allocated_floor: z.string().optional(),
     allocated_room: z.string().optional(),
     assigned_building: z.string().optional(),
     assigned_floors: z.array(z.number()).optional(),
 })
 
-export default function AddWardenForm({ user, availableBuildingsAndFloors, assignedWardenFloors, assignedStudentRooms }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[], assignedWardenFloors: { floor_id: number }[], assignedStudentRooms: { room_id: number }[] }) {
+export default function AddWardenForm({ user, availableBuildingsAndFloors }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[] }) {
 
-    const [selectedBuilding, setSelectedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
     const [selectedAllocatedBuilding, setSelectedAllocatedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
+    const [availableRooms, setAvailableRooms] = useState<{ room_name: string }[]>([]);
+    const [availableWardenFloors, setAvailableWardenFloors] = useState<number[]>([]);
 
-    const assignedStudentRoomIds = assignedStudentRooms.map(r => r.room_id);
-    const assignedWardenFloorIds = assignedWardenFloors.map(f => f.floor_id);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -56,6 +56,7 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
             phone: "",
             email: "",
             allocated_building: "",
+            allocated_floor: "",
             allocated_room: "",
             assigned_building: "",
             assigned_floors: [],
@@ -69,11 +70,7 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
             return;
         }
 
-        const building = availableBuildingsAndFloors.find(b => b.name === values.allocated_building);
-        const room = building?.floors.flatMap(f => f.rooms).find(r => r.name === values.allocated_room);
-
-
-        const res = await createUser(values.username, values.email, values.phone, values.password, 'warden', values.email, user.name, user.usn_id, user.role, room?.id, values.assigned_floors);
+        const res = await createUser(values.username, values.email, values.phone, values.password, 'warden', values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor ? values.allocated_floor : undefined, values.allocated_room, values.assigned_building, values.assigned_floors);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -81,6 +78,30 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
             toast.error(res.message)
         }
     }
+
+    const selectedAllocatedBuildingName = form.watch("allocated_building");
+    const selectedFloorNumber = form.watch("allocated_floor");
+    const selectedAssignedBuildingName = form.watch("assigned_building");
+
+    useEffect(() => {
+        if (selectedAllocatedBuildingName && selectedFloorNumber) {
+            getAvailableRooms(selectedAllocatedBuildingName, parseInt(selectedFloorNumber, 10)).then(setAvailableRooms);
+            form.setValue('allocated_room', '');
+        } else {
+            setAvailableRooms([]);
+        }
+    }, [selectedAllocatedBuildingName, selectedFloorNumber, form]);
+
+    useEffect(() => {
+        if (selectedAssignedBuildingName) {
+            getAvailableFloorsForWarden(selectedAssignedBuildingName).then(floors => {
+                setAvailableWardenFloors(floors);
+                form.setValue('assigned_floors', []); // Reset selection when building changes
+            });
+        } else {
+            setAvailableWardenFloors([]);
+        }
+    }, [selectedAssignedBuildingName, form]);
 
     return (
         <Form {...form}>
@@ -150,15 +171,43 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
                                     const building = availableBuildingsAndFloors.find(b => b.name === value) || null;
                                     setSelectedAllocatedBuilding(building);
                                     form.setValue('allocated_room', "");
+                                    form.setValue('allocated_floor', "");
                                 }}
                                     value={field.value}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose a building for accommodation" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building) => (
-                                            <SelectItem key={building.id} value={building.name}>
+                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building, index) => (
+                                            <SelectItem key={index} value={building.name}>
                                                 {building.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="allocated_floor"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Warden Accommodation Floor</FormLabel>
+                            <FormControl>
+                                <Select onValueChange={(value) => {
+                                    field.onChange(value);
+                                    form.setValue('allocated_room', '');
+                                }} value={field.value} disabled={!selectedAllocatedBuilding}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Choose a floor for accommodation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectedAllocatedBuilding?.floors.map((floor, index) => (
+                                            <SelectItem key={index} value={floor.toString()}>
+                                                Floor {floor === 0 ? 'G' : floor}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -175,19 +224,14 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
                         <FormItem>
                             <FormLabel>Warden Accommodation Room</FormLabel>
                             <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedAllocatedBuilding}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!form.getValues('allocated_floor')}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose a room for accommodation" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {selectedAllocatedBuilding && selectedAllocatedBuilding.floors.flatMap(floor => (floor as any).rooms).map((room: any) => {
-                                            const isAssigned = assignedStudentRoomIds.includes(room.id);
-                                            return !isAssigned && (
-                                                <SelectItem key={room.id} value={room.name}>
-                                                    {room.name}
-                                                </SelectItem>
-                                            )
-                                        })}
+                                        {availableRooms.map((room) => (
+                                            <SelectItem key={room.room_name} value={room.room_name}>{room.room_name}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </FormControl>
@@ -204,8 +248,6 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
                             <FormControl>
                                 <Select onValueChange={(value) => {
                                     field.onChange(value);
-                                    const building = availableBuildingsAndFloors.find(b => b.name === value) || null;
-                                    setSelectedBuilding(building);
                                     form.setValue('assigned_floors', []); // Reset selected floors when building changes
                                 }}
                                     value={field.value}>
@@ -213,8 +255,8 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
                                         <SelectValue placeholder="Choose a building" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building) => (
-                                            <SelectItem key={building.id} value={building.name}>
+                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building, index) => (
+                                            <SelectItem key={index} value={building.name}>
                                                 {building.name}
                                             </SelectItem>
                                         ))}
@@ -232,32 +274,29 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors, assig
                         <FormItem>
                             <FormLabel>Available Floors</FormLabel>
                             <FormControl>
-                                <div className="space-y-2">
-                                    {selectedBuilding && selectedBuilding.floors.map((floor) => {
-                                        const isAssigned = assignedWardenFloorIds.includes(floor.id);
-                                        return !isAssigned && (
-                                            <div key={floor.floor_number} className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={`floor-${floor.id}`}
-                                                    checked={field.value?.includes(floor.id)}
-                                                    onCheckedChange={(checked) => {
-                                                        const currentValues = field.value || [];
-                                                        if (checked) {
-                                                            field.onChange([...currentValues, floor.id]);
-                                                        } else {
-                                                            field.onChange(currentValues.filter(value => value !== floor.id));
-                                                        }
-                                                    }}
-                                                />
-                                                <label
-                                                    htmlFor={`floor-${floor.id}`}
-                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                >
-                                                    Floor {floor.floor_number === 0 ? 'G' : floor.floor_number}
-                                                </label>
-                                            </div>
-                                        )
-                                    })}
+                                <div className="space-y-2 grid grid-cols-2 items-center gap-2">
+                                    {availableWardenFloors.length > 0 ? availableWardenFloors.map((floor: number, index) => (
+                                        <div key={index} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`floor-${floor}`}
+                                                checked={field.value?.includes(floor)}
+                                                onCheckedChange={(checked) => {
+                                                    const currentValues = field.value || [];
+                                                    if (checked) {
+                                                        field.onChange([...currentValues, floor]);
+                                                    } else {
+                                                        field.onChange(currentValues.filter(value => value !== floor));
+                                                    }
+                                                }}
+                                            />
+                                            <label
+                                                htmlFor={`floor-${floor}`}
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                Floor {floor === 0 ? 'G' : floor}
+                                            </label>
+                                        </div>
+                                    )) : <p className="text-sm text-muted-foreground col-span-2">Select a building to see available floors.</p>}
                                 </div>
                             </FormControl>
                             <FormMessage />

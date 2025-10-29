@@ -9,7 +9,7 @@ import AddStudentForm from "./addStudentsForm"
 import { getAvailableBuildingsAndFloors } from "./action"
 
 const AddMemberTabsComponent = async () => {
-    const { buildings: availableBuildingsAndFloors, assignedWardenFloors, assignedStudentRooms } = await getAvailableBuildingsAndFloors();
+    const availableBuildingsAndFloors: AvailableBuildingsAndFloors[] = await getAvailableBuildingsAndFloors();
     const cookiestore = await cookies()
     const token = cookiestore.get("token")?.value
     if (!token) {
@@ -28,13 +28,13 @@ const AddMemberTabsComponent = async () => {
                     <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
                 <TabsContent value="student">
-                    <AddStudentForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedStudentRooms={assignedStudentRooms} />
+                    <AddStudentForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} />
                 </TabsContent>
                 <TabsContent value="warden">
-                    <AddWardenForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedWardenFloors={assignedWardenFloors} assignedStudentRooms={assignedStudentRooms} />
+                    <AddWardenForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} />
                 </TabsContent>
                 <TabsContent value="canteen">
-                    <AddCanteenManagerForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} assignedStudentRooms={assignedStudentRooms} />
+                    <AddCanteenManagerForm user={user} availableBuildingsAndFloors={availableBuildingsAndFloors} />
                 </TabsContent>
                 <TabsContent value="admin">
                     <AddAdminForm user={user} />

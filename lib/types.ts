@@ -27,12 +27,13 @@ export type BuildingData = {
 }
 
 export type AvailableBuildingsAndFloors = {
-  id: number;
   name: string;
-  floors: {
-    id: any;
-    rooms: any;
-    building_id: number;
-    floor_number: number;
-  }[];
+  floors: number[];
 }
+
+export type AvailableRooms = {
+  room_name: string;
+  floor_number: number;
+  total_beds: number;
+  occupied_beds: number;
+};

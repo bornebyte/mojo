@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { CirclePlus } from "lucide-react"
-import { createUser } from "./action"
+import { createUser, getAvailableRooms } from "./action"
 import { toast } from "sonner";
 import type { AvailableBuildingsAndFloors, UserPayload } from "@/lib/types"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -35,13 +35,14 @@ const formSchema = z.object({
         message: "Invalid email address.",
     }),
     allocated_building: z.string().min(1, { message: "Building is required." }),
+    allocated_floor: z.string().min(1, { message: "Floor is required." }),
     allocated_room: z.string().min(1, { message: "Room is required." }),
 })
 
-export default function AddCanteenManagerForm({ user, availableBuildingsAndFloors, assignedStudentRooms }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[], assignedStudentRooms: { room_id: number }[] }) {
+export default function AddCanteenManagerForm({ user, availableBuildingsAndFloors }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[] }) {
     const [selectedAllocatedBuilding, setSelectedAllocatedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
-    const assignedStudentRoomIds = assignedStudentRooms.map(r => r.room_id);
-
+    const [availableRooms, setAvailableRooms] = useState<{ room_name: string }[]>([]);
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -50,9 +51,22 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
             phone: "",
             email: "",
             allocated_building: "",
+            allocated_floor: "",
             allocated_room: "",
         },
     })
+
+    const selectedBuildingName = form.watch("allocated_building");
+    const selectedFloorNumber = form.watch("allocated_floor");
+
+    useEffect(() => {
+        if (selectedBuildingName && selectedFloorNumber) {
+            getAvailableRooms(selectedBuildingName, parseInt(selectedFloorNumber, 10)).then(setAvailableRooms);
+            form.setValue('allocated_room', '');
+        } else {
+            setAvailableRooms([]);
+        }
+    }, [selectedBuildingName, selectedFloorNumber, form]);
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user.name || !user.usn_id || !user.role) {
@@ -61,15 +75,7 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
             return;
         }
 
-        const building = availableBuildingsAndFloors.find(b => b.name === values.allocated_building);
-        const room = building?.floors.flatMap(f => f.rooms).find(r => r.name === values.allocated_room);
-
-        if (!room) {
-            toast.error("Selected room not found. Please try again.");
-            return;
-        }
-
-        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role, room.id);
+        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor, values.allocated_room);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -146,15 +152,43 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
                                     const building = availableBuildingsAndFloors.find(b => b.name === value) || null;
                                     setSelectedAllocatedBuilding(building);
                                     form.setValue('allocated_room', "");
+                                    form.setValue('allocated_floor', "");
                                 }}
                                     value={field.value}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose a building" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building) => (
-                                            <SelectItem key={building.id} value={building.name}>
+                                        {availableBuildingsAndFloors && availableBuildingsAndFloors.map((building, index) => (
+                                            <SelectItem key={index} value={building.name}>
                                                 {building.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="allocated_floor"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Accommodation Floor</FormLabel>
+                            <FormControl>
+                                <Select onValueChange={value => {
+                                    field.onChange(value);
+                                    form.setValue('allocated_room', "");
+                                }} value={field.value} disabled={!selectedAllocatedBuilding}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Choose a floor" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectedAllocatedBuilding?.floors.map((floor, index) => (
+                                            <SelectItem key={index} value={floor.toString()}>
+                                                Floor {floor === 0 ? 'G' : floor}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -171,14 +205,16 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
                         <FormItem>
                             <FormLabel>Accommodation Room</FormLabel>
                             <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedAllocatedBuilding}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!form.getValues('allocated_floor')}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose a room" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {selectedAllocatedBuilding && selectedAllocatedBuilding.floors.flatMap(floor => (floor as any).rooms).map((room: any) => (
-                                            !assignedStudentRoomIds.includes(room.id) && <SelectItem key={room.id} value={room.name}>{room.name}</SelectItem>
-                                        ))}
+                                        {availableRooms.length > 0 ? availableRooms.map((room) => (
+                                            <SelectItem key={room.room_name} value={room.room_name}>
+                                                {room.room_name}
+                                            </SelectItem>
+                                        )) : <SelectItem value="no-rooms" disabled>No available rooms</SelectItem>}
                                     </SelectContent>
                                 </Select>
                             </FormControl>
