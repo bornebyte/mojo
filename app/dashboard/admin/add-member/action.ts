@@ -122,8 +122,8 @@ export const getAvailableRooms = async (building: string, floor: number) => {
             b.name = ${building} AND f.floor_number = ${floor};
     `;
 
-    const roomsWithOccupancy = rooms_data.map((room: any) => {
-        const occupiedBeds = available_rooms.filter((allocatedRoom: any) => allocatedRoom === room.room_name).length;
+    const roomsWithOccupancy = rooms_data.map((room) => {
+        const occupiedBeds = available_rooms.filter((allocatedRoom) => allocatedRoom === room.room_name).length;
         return {
             room_name: room.room_name,
             floor_number: room.floor_number,
