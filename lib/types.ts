@@ -37,3 +37,23 @@ export type AvailableRooms = {
   total_beds: number;
   occupied_beds: number;
 };
+
+export type BuildingAllUsers = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  usn_id: string | null;
+  added_by_name: string | null;
+  added_by_id: string | null;
+  added_by_role: string | null;
+  status: string;
+  hold_reason: string | null;
+  allocated_building: string | null;
+  allocated_floor: string | null;
+  allocated_room: string | null;
+  assigned_building: string | null;
+  assigned_floor: string | null;
+  created_at: string;
+};

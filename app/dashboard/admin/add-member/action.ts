@@ -43,7 +43,7 @@ export const createUser = async (name: string, email: string, phone: string, pas
     if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is not set");
     const encryptedPassword = AES.encrypt(password, process.env.SECRET_KEY as string).toString();
 
-    const newUser = await sql`
+    await sql`
         INSERT INTO users (name, email, phone, password, role, usn_id, added_by_name, added_by_id, added_by_role, allocated_building, allocated_floor, allocated_room, assigned_building, assigned_floor)
         VALUES (${name}, ${email}, ${phone}, ${encryptedPassword}, ${role}, ${usn_id}, ${added_by_name}, ${added_by_id}, ${added_by_role}, ${allocated_building || null}, ${allocated_floor || null}, ${allocated_room || null}, ${assigned_building || null}, ${assigned_floor_ids ? JSON.stringify(assigned_floor_ids) : null})
         RETURNING id
@@ -105,7 +105,8 @@ export const getAvailableRooms = async (building: string, floor: number) => {
     `;
     available_rooms.forEach((room, index) => {
         available_rooms[index] = room.allocated_room;
-    }); const rooms_data = await sql`
+    }); 
+    const rooms_data = await sql`
         SELECT
             b.name AS building_name,
             f.floor_number,

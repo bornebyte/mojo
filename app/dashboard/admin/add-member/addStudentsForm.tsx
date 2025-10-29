@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { CirclePlus } from "lucide-react"
 import { toast } from "sonner"
-import type { AvailableBuildingsAndFloors, AvailableRooms, UserPayload } from "@/lib/types"
+import type { AvailableBuildingsAndFloors, UserPayload } from "@/lib/types"
 import { createUser, getAvailableRooms } from "./action"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -46,7 +46,7 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
     const [selectedAllocatedBuilding, setSelectedAllocatedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
     const [roomsForSelectedFloor, setRoomsForSelectedFloor] = useState<{ room_name: string }[]>([]);
 
-    const allocatedBuilding = useForm().watch('allocated_building');
+    useForm().watch('allocated_building');
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),

@@ -35,48 +35,34 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { BuildingAllUsers } from "@/lib/types"
+import { getWardenNameByStudentBuildingAndFloor } from "./actions"
 
-const data: Payment[] = [
-    {
-        id: "m5gr84i9",
-        amount: 316,
-        status: "success",
-        email: "ken99@example.com",
-    },
-    {
-        id: "3u1reuv4",
-        amount: 242,
-        status: "success",
-        email: "Abe45@example.com",
-    },
-    {
-        id: "derv1ws0",
-        amount: 837,
-        status: "processing",
-        email: "Monserrat44@example.com",
-    },
-    {
-        id: "5kma53ae",
-        amount: 874,
-        status: "success",
-        email: "Silas22@example.com",
-    },
-    {
-        id: "bhqecj4p",
-        amount: 721,
-        status: "failed",
-        email: "carmella@example.com",
-    },
-]
+function WardenNameDisplay({ building, floor }: { building?: string | null, floor?: string | null }) {
+    const [wardenName, setWardenName] = React.useState("Loading...");
 
-export type Payment = {
-    id: string
-    amount: number
-    status: "pending" | "processing" | "success" | "failed"
-    email: string
+    React.useEffect(() => {
+        if (building && floor) {
+            getWardenNameByStudentBuildingAndFloor(building, floor)
+                .then(name => setWardenName(name || "N/A"))
+                .catch(() => setWardenName("Error"));
+        } else {
+            setWardenName("N/A");
+        }
+    }, [building, floor]);
+
+    return <>{wardenName}</>;
 }
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<BuildingAllUsers>[] = [
+    {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => (
+            <div>{row.getValue("id")}</div>
+        ),
+        enableHiding: false,
+    },
     {
         id: "select",
         header: ({ table }) => (
@@ -100,11 +86,44 @@ export const columns: ColumnDef<Payment>[] = [
         enableHiding: false,
     },
     {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("name")}</div>
+        ),
+    },
+    {
+        accessorKey: "allocated_building",
+        header: "Building",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_building") || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "allocated_floor",
+        header: "Floor",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_floor") || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "allocated_room",
+        header: "Room",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_room") || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "role",
+        header: "Role",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("role")}</div>
+        ),
+    },
+    {
         accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("status")}</div>
-        ),
+        cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>,
     },
     {
         accessorKey: "email",
@@ -115,32 +134,74 @@ export const columns: ColumnDef<Payment>[] = [
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
                     Email
-                    <ArrowUpDown />
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )
         },
         cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
     },
     {
-        accessorKey: "amount",
-        header: () => <div className="text-right">Amount</div>,
+        accessorKey: "phone",
+        header: "Phone",
+        cell: ({ row }) => <div>{row.getValue("phone")}</div>,
+    },
+    {
+        accessorKey: "usn_id",
+        header: "USN_ID",
+        cell: ({ row }) => <div>{row.getValue("usn_id") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "added_by_name",
+        header: "Added by Name",
+        cell: ({ row }) => <div className="capitalize">{row.getValue("added_by_name") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "added_by_id",
+        header: "Added by ID",
+        cell: ({ row }) => <div>{row.getValue("added_by_id") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "added_by_role",
+        header: "Added by Role",
+        cell: ({ row }) => <div className="capitalize">{row.getValue("added_by_role") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "hold_reason",
+        header: "Hold Reason",
+        cell: ({ row }) => <div>{row.getValue("hold_reason") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "assigned_building",
+        header: "Warden Building",
+        cell: ({ row }) => <div className="capitalize">{row.getValue("assigned_building") || "N/A"}</div>,
+    },
+    {
+        accessorKey: "assigned_floor",
+        header: "Warden Floor",
         cell: ({ row }) => {
-            const amount = parseFloat(row.getValue("amount"))
-
-            // Format the amount as a dollar amount
-            const formatted = new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-            }).format(amount)
-
-            return <div className="text-right font-medium">{formatted}</div>
+            const floors = row.getValue("assigned_floor");
+            try {
+                return <div className="capitalize">{floors ? JSON.parse(floors as string).join(', ') : "N/A"}</div>
+            } catch (e) {
+                return <div className="capitalize">{floors as string || "N/A"}</div>
+            }
         },
+    },
+    {
+        accessorKey: "created_at",
+        header: ({ column }) => (
+            <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                Created At
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+        ),
+        cell: ({ row }) => <div className="font-medium">{new Date(row.getValue("created_at")).toLocaleString()}</div>,
     },
     {
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
-            const payment = row.original
+            const userdetail = row.original
 
             return (
                 <DropdownMenu>
@@ -151,15 +212,26 @@ export const columns: ColumnDef<Payment>[] = [
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(payment.id)}
-                        >
-                            Copy payment ID
-                        </DropdownMenuItem>
+                        <DropdownMenuLabel>{userdetail.name}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View customer</DropdownMenuItem>
-                        <DropdownMenuItem>View payment details</DropdownMenuItem>
+                        <DropdownMenuItem >
+                            Email : {userdetail.email}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem >
+                            Phone : {userdetail.phone}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem >
+                            USN ID : {userdetail.usn_id || "N/A"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem >
+                            Added By : {userdetail.added_by_name || "N/A"} ({userdetail.added_by_role || "N/A"})
+                        </DropdownMenuItem>
+                        <DropdownMenuItem >
+                            Added By ID : {userdetail.added_by_id || "N/A"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem >
+                            Warden : <WardenNameDisplay building={userdetail.allocated_building} floor={userdetail.allocated_floor} />
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )
@@ -167,13 +239,25 @@ export const columns: ColumnDef<Payment>[] = [
     },
 ]
 
-export function ManageMembersTable() {
+export function ManageMembersTable({ data }: { data: BuildingAllUsers[] }) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
     )
     const [columnVisibility, setColumnVisibility] =
-        React.useState<VisibilityState>({})
+        React.useState<VisibilityState>({
+            "select": false,
+            "email": false,
+            "phone": false,
+            "usn_id": false,
+            "added_by_name": false,
+            "added_by_id": false,
+            "added_by_role": false,
+            "hold_reason": false,
+            "created_at": false,
+            "assigned_building": false,
+            "assigned_floor": false,
+        })
     const [rowSelection, setRowSelection] = React.useState({})
 
     const table = useReactTable({
@@ -199,10 +283,10 @@ export function ManageMembersTable() {
         <div className="w-full md:w-[700px] lg:w-[900px]">
             <div className="flex items-center gap-2 py-4">
                 <Input
-                    placeholder="Filter emails..."
-                    value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+                    placeholder="Search names..."
+                    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
                     onChange={(event) =>
-                        table.getColumn("email")?.setFilterValue(event.target.value)
+                        table.getColumn("name")?.setFilterValue(event.target.value)
                     }
                     className="max-w-sm"
                 />
