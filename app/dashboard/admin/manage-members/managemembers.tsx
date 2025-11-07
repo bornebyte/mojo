@@ -35,7 +35,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { BuildingAllUsers } from "@/lib/types"
+import { UserPayload } from "@/lib/types"
 import { getWardenNameByStudentBuildingAndFloor } from "./actions"
 
 function WardenNameDisplay({ building, floor }: { building?: string | null, floor?: string | null }) {
@@ -54,7 +54,7 @@ function WardenNameDisplay({ building, floor }: { building?: string | null, floo
     return <>{wardenName}</>;
 }
 
-export const columns: ColumnDef<BuildingAllUsers>[] = [
+export const columns: ColumnDef<UserPayload>[] = [
     {
         accessorKey: "id",
         header: "ID",
@@ -239,7 +239,7 @@ export const columns: ColumnDef<BuildingAllUsers>[] = [
     },
 ]
 
-export function ManageMembersTable({ data }: { data: BuildingAllUsers[] }) {
+export function ManageMembersTable({ data }: { data: UserPayload[] }) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []

@@ -7,7 +7,7 @@ import { BuildingsTable } from './viewBuildings'
 import { getBuildings } from './actions'
 
 const ManageBuildings = async () => {
-  const user: UserPayload = await getUserFromToken()
+  const user = await getUserFromToken() as UserPayload
   const buildingsData: BuildingData[] = await getBuildings()
 
   // The `floors` property is a JSON string from the database query.
