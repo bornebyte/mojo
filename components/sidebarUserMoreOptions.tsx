@@ -15,12 +15,18 @@ import {
 import { UserPayload } from "@/lib/types"
 import { logout as logoutAction } from "@/app/login/action"
 import { useRouter } from "next/navigation"
+import { useContext } from "react"
+import UserContext from "@/app/context/UserContext"
 
 export function DropdownMenuForSidebarUserMoreOptions({ user }: { user: UserPayload }) {
+  const userctx = useContext(UserContext)
   const router = useRouter()
   const handleClickLogout = async () => {
-    await logoutAction()
-    router.push("/login")
+    const logoutStatus = await logoutAction()
+    if (logoutStatus) {
+      userctx?.setUser(null)
+      router.push("/login")
+    }
   }
   return (
     <>
@@ -31,7 +37,7 @@ export function DropdownMenuForSidebarUserMoreOptions({ user }: { user: UserPayl
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40" align="end">
-          <DropdownMenuLabel>{user.name} <span>{user.usn_id}</span></DropdownMenuLabel>
+          <DropdownMenuLabel>{user?.name} <span>{user?.usn_id}</span></DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={handleClickLogout}>

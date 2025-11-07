@@ -25,6 +25,8 @@ import {
 import { loginUser } from "./action"
 import { toast } from "sonner"
 import { redirect } from "next/navigation"
+import { useContext } from "react"
+import UserContext from "../context/UserContext"
 
 const loginFormSchema = z.object({
     username: z.string().min(4, {
@@ -41,6 +43,7 @@ const loginFormSchema = z.object({
 })
 
 export function LoginForm() {
+    const user = useContext(UserContext)
     const form = useForm<z.infer<typeof loginFormSchema>>({
         resolver: zodResolver(loginFormSchema),
         defaultValues: {
@@ -55,6 +58,9 @@ export function LoginForm() {
             // form.reset()
             toast.success(response.message)
             if (response.loginstatus) {
+                if (response.user) {
+                    user?.setUser(response.user);
+                }
                 redirect(`/dashboard/${values.role}`)
             }
         })
@@ -66,7 +72,7 @@ export function LoginForm() {
                 <h1 className="text-4xl font-bold">Mojo</h1>
                 <p className="text-gray-600">Login to your account</p>
             </div>
-            
+
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-96">
                     <FormField

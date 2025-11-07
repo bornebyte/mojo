@@ -40,7 +40,7 @@ export const loginUser = async (usn_id: string, password: string, role: string) 
     secure: true,
     expires: expiresAt,
   });
-  return { message: "Login successful", loginstatus: true };
+  return { message: "Login successful", loginstatus: true, user: existingUser[0] };
 }
 
 export const logout = async () => {

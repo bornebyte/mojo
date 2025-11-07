@@ -1,9 +1,22 @@
-import type { JWTPayload } from "jose";
-
-export interface UserPayload extends JWTPayload {
+export type UserPayload = {
+  id?: number;
   name?: string;
-  usn_id?: string;
+  email?: string;
+  phone?: string;
   role?: "student" | "warden" | "admin" | "canteen manager";
+  usn_id?: string | null;
+  added_by_name?: string | null;
+  added_by_id?: string | null;
+  added_by_role?: string | null;
+  status?: string;
+  hold_reason?: string | null;
+  allocated_building?: string | null;
+  allocated_floor?: string | null;
+  allocated_room?: string | null;
+  assigned_building?: string | null;
+  assigned_floor?: string | null;
+  created_at?: string;
+  user_id?: string;
 }
 
 export type BuildingData = {

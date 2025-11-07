@@ -6,7 +6,7 @@ export const getUserFromToken = async () => {
     const cookiestore = await cookies()
     const token = cookiestore.get("token")?.value
     if (!token) {
-        throw new Error("No token found")
+        return null
     }
     const secret = new TextEncoder().encode(process.env.JWT_SECRET)
     const { payload } = await jwtVerify(token, secret)

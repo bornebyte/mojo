@@ -51,7 +51,6 @@ export const getAllStudentsInBuildingAndFloorByDate = async (wardenDetails: Buil
 
         // 3. Use the array of strings directly in the query. `neon` will handle formatting.
         const query = `SELECT * FROM attendance WHERE building='${assigned_building}' AND floor IN ${floorStringsTuple} AND DATE(timestamp) = CURRENT_DATE AND present = FALSE`
-        // console.log(query)
         const students = await sql.query(query);
         return { success: true, data: students };
     } catch (error) {

@@ -4,6 +4,7 @@ import "./globals.css";
 import NavigationMenuComponent from "@/components/NavMenuComponent";
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
+import { UserProvider } from "./context/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,9 +37,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NavigationMenuComponent />
-          {children}
-          <Toaster position="top-center" />
+          <UserProvider>
+            <NavigationMenuComponent />
+            {children}
+            <Toaster position="top-center" />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>
