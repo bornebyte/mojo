@@ -42,7 +42,7 @@ export default function AppSidebar({ items, user }: { items: { title: string; ur
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild>
-                            <div className="py-6 flex items-center justify-start gap-4 px-8">
+                            <div className="py-6 flex items-center justify-start gap-4 px-2">
                                 <Avatar className="rounded-lg text-3xl">
                                     <AvatarImage src="https://github.com/shadcn.png" />
                                     <AvatarFallback>CN</AvatarFallback>

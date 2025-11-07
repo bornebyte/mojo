@@ -56,4 +56,5 @@ export type BuildingAllUsers = {
   assigned_building: string | null;
   assigned_floor: string | null;
   created_at: string;
+  user_id?: string;
 };

@@ -12,7 +12,6 @@ export const getAllUsers = async () => {
 export const getWardenNameByStudentBuildingAndFloor = async (building: string | null, floor: string | null) => {
     const sql = neon(process.env.DATABASE_URL!);
     const result = await sql`SELECT name FROM users WHERE role = 'warden' AND allocated_building = ${building} AND allocated_floor = ${floor} LIMIT 1`;
-    console.log(result[0].name)
     if (result.length > 0) {
         return result[0].name;
     } else {
