@@ -1,0 +1,5 @@
+# This file serves as an example for the required environment variables.
+# Copy this file to .env.local and fill in the values for your environment.
+# Rename it as .env.local
+DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
+JWT_SECRET="a-very-strong-and-secret-key-for-jwt"

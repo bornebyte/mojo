@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mojo - Student Attendance Management System
 
-## Getting Started
+![Mojo Banner](https://github.com/bornebyte/mojo/blob/main/public/hostel_logo.png?raw=true)
 
-First, run the development server:
+Mojo is a modern, web-based student attendance management system designed for educational institutions and residential facilities. It provides an intuitive interface for wardens or administrators to easily track and manage student attendance.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+- **Warden Dashboard**: A central hub for wardens to manage their assigned building and floors.
+- **Real-time Attendance Marking**: Wardens can view a list of students and mark them as present with a single click.
+- **Instant Feedback**: The interface provides immediate success or error notifications for attendance marking actions.
+- **Student Roster**: Automatically fetches and displays students based on the warden's building and floor assignments.
+- **Responsive Design**: Built with modern web technologies for a seamless experience on any device.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (with App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI**: [React](https://react.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Notifications**: [Sonner](https://sonner.emilkowal.ski/)
+- **Authentication**: JWT (JSON Web Tokens)
+
+## 🚀 Getting Started
+
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/) (v18.x or later recommended)
+- [pnpm](https://pnpm.io/), `npm`, or `yarn`
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/bornebyte/mojo.git
+    cd mojo
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    # or
+    # npm install
+    # or
+    # yarn install
+    ```
+
+3.  **Set up environment variables:**
+
+    Create a `.env.local` file in the root of your project and add the necessary environment variables. You can use `env` as a template.
+
+    ```bash
+    cp env .env.local
+    ```
+
+    Now, fill in the values in `.env.local`:
+    ```env
+    DATABASE_URL="your_database_connection_string"
+    JWT_SECRET="your_super_secret_jwt_key"
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    pnpm dev
+    # or
+    # npm run dev
+    # or
+    # yarn dev
+    ```
+
+    Open http://localhost:3000 with your browser to see the result.
+
+## 📁 Project Structure
+
+The project follows the standard Next.js App Router structure.
+
+```
+mojo/
+├── app/
+│   ├── dashboard/          # Protected dashboard routes
+│   │   └── warden/
+│   │       └── attendance/ # Warden's attendance feature
+│   │           ├── actions.ts
+│   │           ├── page.tsx
+│   │           └── showStudents.tsx
+│   ├── (auth)/             # Authentication pages (login, signup)
+│   └── layout.tsx
+├── components/
+│   └── ui/                 # Reusable UI components (from shadcn/ui)
+├── lib/
+│   ├── types.ts            # TypeScript types and interfaces
+│   └── utils.ts            # Utility functions
+├── public/                 # Static assets
+├── .env.example            # Example environment variables
+├── .gitignore
+├── next.config.mjs
+├── package.json
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Please read our CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
 
-## Learn More
+## 📜 License
 
-To learn more about Next.js, take a look at the following resources:
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*This README was generated with love by Gemini Code Assist.*
