@@ -1,3 +1,4 @@
+"use server"
 import { UserPayload } from "@/lib/types"
 import { jwtVerify } from "jose"
 import { cookies } from "next/headers"

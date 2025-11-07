@@ -109,21 +109,6 @@ const wardenItems = [
         url: "/dashboard/warden/attendance",
         icon: UserPlus,
     },
-    {
-        title: "My attendance",
-        url: "/dashboard/warden/my-attendance",
-        icon: Calendar,
-    },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
-    },
 ]
 
 export default function AppSidebar() {

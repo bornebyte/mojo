@@ -24,15 +24,10 @@ export const loginUser = async (usn_id: string, password: string, role: string) 
   }
 
   const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const payload = {
-    usn_id: existingUser[0].usn_id,
-    name: existingUser[0].name,
-    role: existingUser[0].role,
-  }
   const expiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days from now
-  const token = await new SignJWT(payload)
+  const token = await new SignJWT(existingUser[0])
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('2d') // Token expiration time
+    .setExpirationTime('1d') // Token expiration time
     .sign(secret);
   const cookieStore = await cookies()
   cookieStore.set("token", token, {
