@@ -93,7 +93,7 @@ export const insertIfTodayAttendanceNotExists = async (user: UserPayload) => {
             return { success: true, message: "Attendance records already exist for today." };
         } else {
             if (studentsRes.data && Array.isArray(studentsRes.data)) {
-                for (let student of studentsRes.data) {
+                for (const student of studentsRes.data) {
                     await sql`INSERT INTO attendance (name, user_id, building, floor) VALUES (${student.name}, ${student.id}, ${student.allocated_building}, ${student.allocated_floor})`
                 }
                 return { success: true, message: "Attendance records created for today." };

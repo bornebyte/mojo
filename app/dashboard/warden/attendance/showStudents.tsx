@@ -13,7 +13,7 @@ const ShowStudents = ({ students }: { students: BuildingAllUsers[] }) => {
         setStudentList(students)
     }, [students])
     const handleMarkPresent = async (student: BuildingAllUsers) => {
-        let res = await markPresent(student)
+        const res = await markPresent(student)
         if (res.success) {
             toast.success(res.message)
             router.refresh()
