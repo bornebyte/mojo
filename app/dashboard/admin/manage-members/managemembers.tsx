@@ -166,11 +166,6 @@ export const columns: ColumnDef<UserPayload>[] = [
         cell: ({ row }) => <div className="capitalize">{row.getValue("added_by_role") || "N/A"}</div>,
     },
     {
-        accessorKey: "hold_reason",
-        header: "Hold Reason",
-        cell: ({ row }) => <div>{row.getValue("hold_reason") || "N/A"}</div>,
-    },
-    {
         accessorKey: "assigned_building",
         header: "Warden Building",
         cell: ({ row }) => <div className="capitalize">{row.getValue("assigned_building") || "N/A"}</div>,
@@ -253,7 +248,6 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
             "added_by_name": false,
             "added_by_id": false,
             "added_by_role": false,
-            "hold_reason": false,
             "created_at": false,
             "assigned_building": false,
             "assigned_floor": false,

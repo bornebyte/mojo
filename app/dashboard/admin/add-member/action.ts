@@ -20,7 +20,6 @@ export async function createUserTable() {
       added_by_id VARCHAR(50),
       added_by_role VARCHAR(255), 
       status VARCHAR(255) DEFAULT 'active',
-      hold_reason TEXT,
       allocated_building VARCHAR(255),  -- The building assigned for accommodation
       allocated_floor VARCHAR(255),     -- The floor assigned for accommodation
       allocated_room VARCHAR(255),      -- The room assigned for accommodation

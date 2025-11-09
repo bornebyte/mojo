@@ -9,7 +9,6 @@ import { getBuildings } from './actions'
 const ManageBuildings = async () => {
   const user = await getUserFromToken() as UserPayload
   const buildingsData: BuildingData[] = await getBuildings()
-
   // The `floors` property is a JSON string from the database query.
   // We need to parse it into a JavaScript object before passing it to the client component.
   const buildings = buildingsData.map(building => ({

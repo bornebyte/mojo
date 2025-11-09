@@ -9,7 +9,6 @@ export type UserPayload = {
   added_by_id?: string | null;
   added_by_role?: string | null;
   status?: string;
-  hold_reason?: string | null;
   allocated_building?: string | null;
   allocated_floor?: string | null;
   allocated_room?: string | null;

@@ -1,44 +1,49 @@
 "use server"
 
 import { UserPayload, BuildingData } from "@/lib/types";
-import { neon, NeonQueryFunction, NeonQueryPromise } from "@neondatabase/serverless";
 import { BuildingFormValues } from "./ManageBuildingsForm";
+import { sql } from "@/lib/db";
+import { NeonQueryPromise } from "@neondatabase/serverless";
 
-async function createBuildingTables(sql: NeonQueryFunction<false, false>) {
-    await sql`
-        CREATE TABLE IF NOT EXISTS buildings (
+async function createBuildingsTables() {
+    await sql.query(`CREATE TABLE IF NOT EXISTS buildings (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            added_by_name VARCHAR(255),
-            added_by_id VARCHAR(50),
+            added_by_name VARCHAR(255) NOT NULL,
+            added_by_id VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `;
-    await sql`
+        );`);
+}
+
+async function createFloorsTables() {
+    await createBuildingsTables();
+    await sql.query(`
         CREATE TABLE IF NOT EXISTS floors (
             id SERIAL PRIMARY KEY,
-            building_id INTEGER REFERENCES buildings(id) ON DELETE CASCADE,
+            building_id INTEGER REFERENCES buildings(id) ON DELETE CASCADE NOT NULL,
             floor_number INTEGER NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(building_id, floor_number)
         );
-    `;
-    await sql`
+    `);
+}
+
+async function createRoomsTables() {
+    await createFloorsTables();
+    await sql.query(`
         CREATE TABLE IF NOT EXISTS rooms (
             id SERIAL PRIMARY KEY,
-            floor_id INTEGER REFERENCES floors(id) ON DELETE CASCADE,
+            floor_id INTEGER REFERENCES floors(id) ON DELETE CASCADE NOT NULL,
             name VARCHAR(255) NOT NULL,
             bed_count INTEGER NOT NULL,
-            status VARCHAR(50) NOT NULL,
-            beds_occupied INTEGER DEFAULT 0,
+            status VARCHAR(50),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-    `;
+    `);
 }
 
 export async function createBuilding(values: BuildingFormValues, user: UserPayload) {
-    const sql = neon(process.env.DATABASE_URL!);
-    await createBuildingTables(sql);
+    await createRoomsTables();
 
     try {
         // The transaction function expects an array of queries, not an async function.
@@ -78,10 +83,9 @@ export async function createBuilding(values: BuildingFormValues, user: UserPaylo
 }
 
 export async function getBuildings(): Promise<BuildingData[]> {
-    const sql = neon(process.env.DATABASE_URL!);
-    await createBuildingTables(sql);
-
-    const buildings = await sql`
+    await createRoomsTables();
+    try {
+        const buildings = await sql`
         SELECT 
             b.id AS building_id,
             b.name AS building_name,
@@ -99,7 +103,9 @@ export async function getBuildings(): Promise<BuildingData[]> {
                                 'name', r.name,
                                 'bed_count', r.bed_count,
                                 'status', r.status,
-                                'beds_occupied', r.beds_occupied,
+                                'beds_occupied', (
+                                    SELECT COUNT(*)::int FROM users u WHERE u.allocated_room = r.name AND u.allocated_floor = f.floor_number::varchar AND u.allocated_building = b.name
+                                ),
                                 'created_at', r.created_at
                             )
                         )
@@ -113,6 +119,10 @@ export async function getBuildings(): Promise<BuildingData[]> {
         GROUP BY b.id
         ORDER BY b.created_at DESC
     `;
+        return buildings as BuildingData[];
+    } catch (error) {
+        console.error("Failed to fetch buildings:", error);
+        return [];
+    }
 
-    return buildings as BuildingData[];
 }
