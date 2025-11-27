@@ -19,8 +19,6 @@ import {
     Calendar,
     Home,
     UserPlus,
-    Search,
-    Settings,
     LucideProps,
     UserPen,
     Building,
@@ -31,7 +29,8 @@ import {
     Users,
     Bell,
     BarChart3,
-    Megaphone
+    Megaphone,
+    AlertCircle
 } from "lucide-react"
 import UserContext from "@/app/context/UserContext";
 
@@ -56,6 +55,11 @@ const adminItems = [
         title: "Manage Buildings",
         url: "/dashboard/admin/manage-buildings",
         icon: Building,
+    },
+    {
+        title: "Complaints",
+        url: "/dashboard/admin/complaints",
+        icon: AlertCircle,
     },
     {
         title: "Announcements",
@@ -114,19 +118,14 @@ const studentItems = [
         icon: Calendar,
     },
     {
+        title: "Complaints",
+        url: "/dashboard/student/complaints",
+        icon: AlertCircle,
+    },
+    {
         title: "Announcements",
         url: "/dashboard/announcements",
         icon: Bell,
-    },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
     },
 ]
 
@@ -150,6 +149,11 @@ const wardenItems = [
         title: "Add Student",
         url: "/dashboard/warden/students/add",
         icon: UserPlus,
+    },
+    {
+        title: "Complaints",
+        url: "/dashboard/warden/complaints",
+        icon: AlertCircle,
     },
     {
         title: "Analytics",
@@ -213,14 +217,14 @@ export default function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <DropdownMenuForSidebarUserMoreOptions user={user}>
-                            <div className="py-6 flex items-center justify-start gap-4 px-2 cursor-pointer hover:bg-sidebar-accent rounded-md transition-colors">
-                                <Avatar className="rounded-lg text-3xl">
+                            <div className="py-2 flex items-center justify-start gap-3 px-2 cursor-pointer hover:bg-sidebar-accent rounded-md transition-colors">
+                                <Avatar className="rounded-lg h-8 w-8">
                                     <AvatarImage src="https://github.com/shadcn.png" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col flex-1 min-w-0">
-                                    <p className="font-bold text-sm truncate">{user?.name || user?.usn_id}</p>
-                                    <p className="text-xs text-muted-foreground capitalize truncate">{user?.role}</p>
+                                    <p className="font-semibold text-xs truncate">{user?.name || user?.usn_id}</p>
+                                    <p className="text-[10px] text-muted-foreground capitalize truncate">{user?.role}</p>
                                 </div>
                             </div>
                         </DropdownMenuForSidebarUserMoreOptions>

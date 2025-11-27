@@ -141,7 +141,7 @@ const AnalyticsPage = () => {
 
     const getFloorWiseStats = () => {
         const floors = getFloorList();
-        return floors.map((floor: Number) => {
+        return floors.map((floor: number) => {
             const floorStudents = students.filter(s => s.allocated_floor === floor.toString());
             return {
                 floor,

@@ -112,10 +112,10 @@ const AddMenuForm = () => {
         },
     })
 
-    const { fields, append, remove, replace } = useFieldArray<AddMenuSchema>({
+    const { fields, append, remove, replace } = useFieldArray({
         control: form.control,
         name: "items",
-    });
+    } as any);
 
     // Load saved templates from localStorage
     React.useEffect(() => {
