@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select"
 import { loginUser } from "./action"
 import { toast } from "sonner"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useContext, useState } from "react"
 import UserContext from "../context/UserContext"
 import { LogIn, Sparkles, Lock, User, Shield } from "lucide-react"
@@ -46,6 +46,7 @@ const loginFormSchema = z.object({
 })
 
 export function LoginForm() {
+    const router = useRouter()
     const user = useContext(UserContext)
     const [isLoading, setIsLoading] = useState(false)
     const form = useForm<z.infer<typeof loginFormSchema>>({
@@ -66,9 +67,9 @@ export function LoginForm() {
                     user?.setUser(response.user);
                 }
                 if (values.role === "canteen manager") {
-                    redirect("/dashboard/canteen-manager")
+                    router.push("/dashboard/canteen-manager")
                 }
-                redirect(`/dashboard/${values.role}`)
+                router.push(`/dashboard/${values.role}`)
             } else {
                 setIsLoading(false)
             }
