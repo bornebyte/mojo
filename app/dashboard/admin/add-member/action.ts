@@ -64,7 +64,7 @@ export const createUser = async (name: string, email: string, phone: string, pas
 export const getAvailableBuildingsAndFloors = async () => {
     if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
 
-    const sql = neon(process.env.DATABASE_URL);
+    // const sql = neon(process.env.DATABASE_URL);
 
     // Ensure supporting tables exist
     await sql`CREATE TABLE IF NOT EXISTS buildings (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL);`;
@@ -101,7 +101,7 @@ export const getAvailableBuildingsAndFloors = async () => {
 export const getAvailableRooms = async (building: string, floor: number) => {
     if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
 
-    const sql = neon(process.env.DATABASE_URL);
+    // const sql = neon(process.env.DATABASE_URL);
 
     // Ensure supporting tables exist
     await sql`CREATE TABLE IF NOT EXISTS buildings (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL);`;
@@ -147,7 +147,7 @@ export const getAvailableRooms = async (building: string, floor: number) => {
 export const getAvailableFloorsForWarden = async (building: string) => {
     if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
 
-    const sql = neon(process.env.DATABASE_URL);
+    // const sql = neon(process.env.DATABASE_URL);
 
     // Ensure supporting tables exist
     await sql`CREATE TABLE IF NOT EXISTS buildings (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL);`;
