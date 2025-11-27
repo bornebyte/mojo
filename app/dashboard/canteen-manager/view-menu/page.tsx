@@ -98,6 +98,7 @@ const ViewMenuComponents = () => {
   // Apply filters whenever search, type, or date changes
   React.useEffect(() => {
     applyFilters()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, typeFilter, dateFilter, dateRange, menus])
 
   const fetchMenus = async () => {

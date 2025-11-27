@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import { UserPayload } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { getAllStudentsForAttendance, markPresent } from "./actions";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 
 const AttendenceComponent = () => {
-    // const router = useRouter();
     const user = useContext(UserContext)?.user as UserPayload;
     const [students, setStudents] = useState<UserPayload[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -24,6 +22,7 @@ const AttendenceComponent = () => {
             }
         }
         fetchStudents();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleMarkPresent = async (student: UserPayload) => {

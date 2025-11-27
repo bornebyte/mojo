@@ -38,7 +38,6 @@ import { toast } from "sonner"
 import {
     getAllFeedback,
     updateFeedbackStatus,
-    deleteFeedback,
     getFeedbackStats
 } from "./actions"
 import { Feedback } from "@/lib/types"
@@ -104,9 +103,8 @@ const FeedbackPage = () => {
 
     React.useEffect(() => {
         applyFilters()
-    }, [searchQuery, statusFilter, categoryFilter, priorityFilter, feedbacks])
-
-    // Load from localStorage on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery, statusFilter, categoryFilter, priorityFilter, feedbacks])    // Load from localStorage on mount
     React.useEffect(() => {
         const cached = localStorage.getItem('canteen_feedback_cache')
         if (cached) {
@@ -210,23 +208,6 @@ const FeedbackPage = () => {
             }
         } catch (error) {
             toast.error("Failed to submit response")
-            console.error(error)
-        }
-    }
-
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this feedback?")) return
-
-        try {
-            const result = await deleteFeedback(id)
-            if (result.success) {
-                toast.success("Feedback deleted successfully")
-                fetchData()
-            } else {
-                toast.error(result.message || "Failed to delete feedback")
-            }
-        } catch (error) {
-            toast.error("Failed to delete feedback")
             console.error(error)
         }
     }

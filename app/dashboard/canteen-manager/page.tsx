@@ -80,10 +80,11 @@ const DashboardCanteenManagerPage = () => {
     snacks: 0,
     dinner: 0
   })
-  const [loading, setLoading] = React.useState(true)
+  const [, setLoading] = React.useState(true)
 
   React.useEffect(() => {
     fetchDashboardData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate])
 
   // Load cached data from localStorage

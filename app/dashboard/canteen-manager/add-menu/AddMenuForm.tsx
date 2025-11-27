@@ -49,7 +49,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { saveMenu, getMenusByDate } from "./actions"
 import { toast } from "sonner"
-import { Menu } from "@/lib/types"
 
 const addMenuSchema = z.object({
     date: z.date(),
@@ -131,9 +130,8 @@ const AddMenuForm = () => {
         if (date) {
             getMenusByDate(date).then(res => {
                 if (res.success && res.data) {
-                    const existingTypes = Array.isArray(res.data)
-                        ? res.data.map((m: any) => m.type)
-                        : [(res.data as any).type]
+                    const menuData = Array.isArray(res.data) ? res.data : [res.data]
+                    const existingTypes = menuData.map((m) => (m as { type: string }).type)
 
                     if (existingTypes.length > 0) {
                         toast.info(`Menus already exist for: ${existingTypes.join(', ')}`)
@@ -160,8 +158,7 @@ const AddMenuForm = () => {
     }
 
     const handleTemplateSelect = (template: string[]) => {
-        console.log(template)
-        replace(template.map(item => ({ id: crypto.randomUUID(), value: item })) as any)
+        replace(template)
         toast.success("Template applied!")
     }
 
@@ -189,11 +186,11 @@ const AddMenuForm = () => {
 
         const res = await getMenusByDate(previousDate)
         if (res.success && res.data) {
-            const menus = Array.isArray(res.data) ? res.data : [res.data]
-            const matchingMenu = menus.find((m: any) => m.type === form.getValues("type"))
+            const menuData = Array.isArray(res.data) ? res.data : [res.data]
+            const matchingMenu = menuData.find((m) => (m as { type: string }).type === form.getValues("type")) as { items: string[] } | undefined
 
             if (matchingMenu) {
-                replace(matchingMenu.items.map((item: string) => ({ id: crypto.randomUUID(), value: item })) as any)
+                replace(matchingMenu.items)
                 toast.success("Previous menu copied!")
             } else {
                 toast.info("No menu found for previous day")
@@ -206,7 +203,7 @@ const AddMenuForm = () => {
         if (input) {
             const items = input.split('\n').filter(item => item.trim())
             if (items.length > 0) {
-                replace(items.map(item => ({ id: crypto.randomUUID(), value: item })) as any)
+                replace(items)
                 toast.success(`Imported ${items.length} items!`)
             }
         }
@@ -441,7 +438,7 @@ const AddMenuForm = () => {
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={() => append("" as any)}
+                                        onClick={() => append("")}
                                         className="w-full"
                                     >
                                         <PlusCircle className="h-4 w-4 mr-2" />
