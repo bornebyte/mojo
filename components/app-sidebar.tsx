@@ -58,16 +58,6 @@ const canteenManagerItems = [
         url: "/dashboard/canteen-manager/view-menu",
         icon: Calendar,
     },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
-    },
 ]
 
 const studentItems = [

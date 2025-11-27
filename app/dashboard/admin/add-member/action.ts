@@ -1,54 +1,64 @@
 "use server"
-import { neon } from "@neondatabase/serverless";
+import { sql } from "@/lib/db";
 import { AES } from "crypto-js";
 
 type UserRole = "student" | "warden" | "admin" | "canteen manager";
 
 export async function createUserTable() {
-    if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
-    const sql = neon(process.env.DATABASE_URL);
+    try {
+        const data = await sql`CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255),
+          email VARCHAR(255) UNIQUE,
+          phone VARCHAR(20),
+          password VARCHAR(255),
+          role VARCHAR(255) DEFAULT 'admin',
+          usn_id VARCHAR(50) UNIQUE,
+          added_by_name VARCHAR(255),
+          added_by_id VARCHAR(50),
+          added_by_role VARCHAR(255), 
+          status VARCHAR(255) DEFAULT 'active',
+          allocated_building VARCHAR(255),  -- The building assigned for accommodation
+          allocated_floor VARCHAR(255),     -- The floor assigned for accommodation
+          allocated_room VARCHAR(255),      -- The room assigned for accommodation
+          assigned_building VARCHAR(255),   -- The building assigned for warden duties
+          assigned_floor VARCHAR(255),      -- The floor assigned for warden duties
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );`;
 
-    const data = await sql`CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255),
-      email VARCHAR(255) UNIQUE,
-      phone VARCHAR(20),
-      password VARCHAR(255),
-      role VARCHAR(255) DEFAULT 'admin',
-      usn_id VARCHAR(50) UNIQUE,
-      added_by_name VARCHAR(255),
-      added_by_id VARCHAR(50),
-      added_by_role VARCHAR(255), 
-      status VARCHAR(255) DEFAULT 'active',
-      allocated_building VARCHAR(255),  -- The building assigned for accommodation
-      allocated_floor VARCHAR(255),     -- The floor assigned for accommodation
-      allocated_room VARCHAR(255),      -- The room assigned for accommodation
-      assigned_building VARCHAR(255),   -- The building assigned for warden duties
-      assigned_floor VARCHAR(255),      -- The floor assigned for warden duties
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );`;
-
-    return data;
+        return data;
+    } catch (error) {
+        console.error("Error creating user table:", error);
+        throw error;
+    }
 }
 
 export const createUser = async (name: string, email: string, phone: string, password: string, role: UserRole, usn_id: string | null, added_by_name: string, added_by_id: string, added_by_role: UserRole, allocated_building?: string | null, allocated_floor?: string | null, allocated_room?: string | null, assigned_building?: string | null, assigned_floor_ids?: number[] | null) => {
-    await createUserTable();
-    if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
-    const sql = neon(process.env.DATABASE_URL);
-    const existingUser = await sql`SELECT email FROM users WHERE email = ${email} OR (usn_id = ${usn_id} AND usn_id IS NOT NULL)`;
-    if (existingUser.length > 0) {
-        return { message: "User already exists", accountcreated: false };
+    try {
+        await createUserTable();
+
+        const existingUser = await sql`SELECT email FROM users WHERE email = ${email} OR (usn_id = ${usn_id} AND usn_id IS NOT NULL)`;
+        if (existingUser.length > 0) {
+            return { message: "User already exists", accountcreated: false };
+        }
+
+        if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is not set");
+        const encryptedPassword = AES.encrypt(password, process.env.SECRET_KEY as string).toString();
+
+        await sql`
+            INSERT INTO users (name, email, phone, password, role, usn_id, added_by_name, added_by_id, added_by_role, allocated_building, allocated_floor, allocated_room, assigned_building, assigned_floor)
+            VALUES (${name}, ${email}, ${phone}, ${encryptedPassword}, ${role}, ${usn_id}, ${added_by_name}, ${added_by_id}, ${added_by_role}, ${allocated_building || null}, ${allocated_floor || null}, ${allocated_room || null}, ${assigned_building || null}, ${assigned_floor_ids ? JSON.stringify(assigned_floor_ids) : null})
+            RETURNING id
+        ` as { id: number }[];
+
+        return { message: "Account created successfully", accountcreated: true };
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return {
+            message: error instanceof Error ? error.message : "Failed to create user",
+            accountcreated: false
+        };
     }
-    if (!process.env.SECRET_KEY) throw new Error("SECRET_KEY is not set");
-    const encryptedPassword = AES.encrypt(password, process.env.SECRET_KEY as string).toString();
-
-    await sql`
-        INSERT INTO users (name, email, phone, password, role, usn_id, added_by_name, added_by_id, added_by_role, allocated_building, allocated_floor, allocated_room, assigned_building, assigned_floor)
-        VALUES (${name}, ${email}, ${phone}, ${encryptedPassword}, ${role}, ${usn_id}, ${added_by_name}, ${added_by_id}, ${added_by_role}, ${allocated_building || null}, ${allocated_floor || null}, ${allocated_room || null}, ${assigned_building || null}, ${assigned_floor_ids ? JSON.stringify(assigned_floor_ids) : null})
-        RETURNING id
-    ` as { id: number }[];
-
-    return { message: "Account created successfully", accountcreated: true };
 };
 
 export const getAvailableBuildingsAndFloors = async () => {
@@ -104,7 +114,7 @@ export const getAvailableRooms = async (building: string, floor: number) => {
     `;
     available_rooms.forEach((room, index) => {
         available_rooms[index] = room.allocated_room;
-    }); 
+    });
     const rooms_data = await sql`
         SELECT
             b.name AS building_name,

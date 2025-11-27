@@ -178,6 +178,7 @@ export const columns: ColumnDef<UserPayload>[] = [
             try {
                 return <div className="capitalize">{floors ? JSON.parse(floors as string).join(', ') : "N/A"}</div>
             } catch (e) {
+                console.log("Error parsing JSON floors:", e);
                 return <div className="capitalize">{floors as string || "N/A"}</div>
             }
         },

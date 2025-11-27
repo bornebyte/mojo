@@ -61,6 +61,9 @@ export function LoginForm() {
                 if (response.user) {
                     user?.setUser(response.user);
                 }
+                if (values.role === "canteen manager") {
+                    redirect("/dashboard/canteen-manager")
+                }
                 redirect(`/dashboard/${values.role}`)
             }
         })

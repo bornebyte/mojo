@@ -34,9 +34,9 @@ const formSchema = z.object({
     email: z.string().email({
         message: "Invalid email address.",
     }),
-    allocated_building: z.string().min(1, { message: "Building is required." }),
-    allocated_floor: z.string().min(1, { message: "Floor is required." }),
-    allocated_room: z.string().min(1, { message: "Room is required." }),
+    allocated_building: z.string().optional(),
+    allocated_floor: z.string().optional(),
+    allocated_room: z.string().optional(),
 })
 
 export default function AddCanteenManagerForm({ user, availableBuildingsAndFloors }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[] }) {

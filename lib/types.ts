@@ -48,3 +48,41 @@ export type AvailableRooms = {
   total_beds: number;
   occupied_beds: number;
 };
+
+export type Menu = {
+  date: Date;
+  type: "breakfast" | "lunch" | "snacks" | "dinner";
+  items: string[];
+}
+
+export type Feedback = {
+  id?: number;
+  user_id: number;
+  user_name: string;
+  user_role: "student" | "warden" | "admin";
+  category: "food_quality" | "service" | "hygiene" | "suggestion" | "complaint" | "other";
+  priority: "low" | "medium" | "high" | "urgent";
+  subject: string;
+  message: string;
+  status: "pending" | "reviewing" | "resolved" | "rejected";
+  response?: string | null;
+  rating?: number | null;
+  created_at?: Date;
+  updated_at?: Date;
+  resolved_at?: Date | null;
+}
+
+export type Announcement = {
+  id?: number;
+  title: string;
+  message: string;
+  category: "menu_update" | "service_info" | "timing_change" | "special_meal" | "general" | "urgent";
+  priority: "low" | "medium" | "high";
+  target_audience: "all" | "students" | "wardens" | "admins";
+  active: boolean;
+  expires_at?: Date | null;
+  created_by_id: number;
+  created_by_name: string;
+  created_at?: Date;
+  updated_at?: Date;
+}

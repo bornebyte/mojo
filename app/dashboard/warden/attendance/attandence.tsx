@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 
 const AttendenceComponent = () => {
-    const router = useRouter();
+    // const router = useRouter();
     const user = useContext(UserContext)?.user as UserPayload;
     const [students, setStudents] = useState<UserPayload[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
