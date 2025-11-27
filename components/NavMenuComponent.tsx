@@ -32,7 +32,7 @@ const NavigationMenuComponent = () => {
         </Button>
         {
           user == null ? <Button variant={"outline"} asChild><Link href={"/login"}>Login</Link></Button> :
-            <Button variant={"outline"} asChild><Link href={`/dashboard/${user?.role}`}>Dashboard</Link></Button>
+            <Button variant={"outline"} asChild><Link href={user?.role === "canteen manager" ? "/dashboard/canteen-manager" : `/dashboard/${user?.role}`}>Dashboard</Link></Button>
         }
         <ModeToggle />
       </nav>

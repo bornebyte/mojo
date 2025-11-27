@@ -50,28 +50,34 @@ import {
     deleteAnnouncement,
     toggleAnnouncementStatus,
     getAnnouncementStats
-} from "./actions"
+} from "@/app/dashboard/canteen-manager/announcements/actions"
 import { Announcement } from "@/lib/types"
 import { Switch } from "@/components/ui/switch"
 
 type AnnouncementWithId = Announcement & { id: number }
 
 const categoryLabels: Record<string, string> = {
+    hostel_rules: "Hostel Rules",
+    event: "Event",
+    maintenance: "Maintenance",
+    general: "General",
+    urgent: "Urgent",
     menu_update: "Menu Update",
     service_info: "Service Info",
     timing_change: "Timing Change",
-    special_meal: "Special Meal",
-    general: "General",
-    urgent: "Urgent"
+    special_meal: "Special Meal"
 }
 
 const categoryColors: Record<string, string> = {
-    menu_update: "bg-blue-100 text-blue-800 border-blue-200",
-    service_info: "bg-purple-100 text-purple-800 border-purple-200",
-    timing_change: "bg-orange-100 text-orange-800 border-orange-200",
-    special_meal: "bg-green-100 text-green-800 border-green-200",
+    hostel_rules: "bg-indigo-100 text-indigo-800 border-indigo-200",
+    event: "bg-purple-100 text-purple-800 border-purple-200",
+    maintenance: "bg-orange-100 text-orange-800 border-orange-200",
     general: "bg-gray-100 text-gray-800 border-gray-200",
-    urgent: "bg-red-100 text-red-800 border-red-200"
+    urgent: "bg-red-100 text-red-800 border-red-200",
+    menu_update: "bg-blue-100 text-blue-800 border-blue-200",
+    service_info: "bg-green-100 text-green-800 border-green-200",
+    timing_change: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    special_meal: "bg-cyan-100 text-cyan-800 border-cyan-200"
 }
 
 const priorityColors: Record<string, string> = {
@@ -96,7 +102,7 @@ const AnnouncementsPage = () => {
     const [formData, setFormData] = React.useState({
         title: "",
         message: "",
-        category: "general" as "menu_update" | "service_info" | "timing_change" | "special_meal" | "general" | "urgent",
+        category: "general" as "menu_update" | "service_info" | "timing_change" | "special_meal" | "general" | "urgent" | "hostel_rules" | "event" | "maintenance",
         priority: "medium" as "low" | "medium" | "high",
         target_audience: "all" as "all" | "students" | "wardens" | "admins",
         active: true,
@@ -182,7 +188,7 @@ const AnnouncementsPage = () => {
         setFormData({
             title: announcement.title,
             message: announcement.message,
-            category: announcement.category as "menu_update" | "service_info" | "timing_change" | "special_meal" | "general" | "urgent",
+            category: announcement.category,
             priority: announcement.priority,
             target_audience: announcement.target_audience,
             active: announcement.active,
@@ -490,12 +496,15 @@ const AnnouncementsPage = () => {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="hostel_rules">Hostel Rules</SelectItem>
+                                        <SelectItem value="event">Event</SelectItem>
+                                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                                        <SelectItem value="general">General</SelectItem>
+                                        <SelectItem value="urgent">Urgent</SelectItem>
                                         <SelectItem value="menu_update">Menu Update</SelectItem>
                                         <SelectItem value="service_info">Service Info</SelectItem>
                                         <SelectItem value="timing_change">Timing Change</SelectItem>
                                         <SelectItem value="special_meal">Special Meal</SelectItem>
-                                        <SelectItem value="general">General</SelectItem>
-                                        <SelectItem value="urgent">Urgent</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
