@@ -15,7 +15,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import type { UserPayload } from "@/lib/types";
 import { DropdownMenuForSidebarUserMoreOptions } from "./sidebarUserMoreOptions";
-import { Calendar, Home, UserPlus, Search, Settings, LucideProps, UserPen, Building } from "lucide-react"
+import {
+    Calendar,
+    Home,
+    UserPlus,
+    Search,
+    Settings,
+    LucideProps,
+    UserPen,
+    Building,
+    UtensilsCrossed,
+    Eye,
+    MessageSquare,
+    ClipboardCheck,
+    Users,
+    Bell,
+    BarChart3,
+    Megaphone
+} from "lucide-react"
 import UserContext from "@/app/context/UserContext";
 
 // Sidebar Menu items.
@@ -40,6 +57,11 @@ const adminItems = [
         url: "/dashboard/admin/manage-buildings",
         icon: Building,
     },
+    {
+        title: "Announcements",
+        url: "/dashboard/announcements",
+        icon: Bell,
+    },
 ]
 
 const canteenManagerItems = [
@@ -51,12 +73,27 @@ const canteenManagerItems = [
     {
         title: "Add Menu",
         url: "/dashboard/canteen-manager/add-menu",
-        icon: UserPlus,
+        icon: UtensilsCrossed,
     },
     {
         title: "View Menu",
         url: "/dashboard/canteen-manager/view-menu",
-        icon: Calendar,
+        icon: Eye,
+    },
+    {
+        title: "Feedback",
+        url: "/dashboard/canteen-manager/feedback",
+        icon: MessageSquare,
+    },
+    {
+        title: "My Announcements",
+        url: "/dashboard/canteen-manager/announcements",
+        icon: Megaphone,
+    },
+    {
+        title: "View All Announcements",
+        url: "/dashboard/announcements",
+        icon: Bell,
     },
 ]
 
@@ -69,12 +106,17 @@ const studentItems = [
     {
         title: "View Menu",
         url: "/dashboard/student/view-menu",
-        icon: UserPlus,
+        icon: UtensilsCrossed,
     },
     {
-        title: "My attendance",
+        title: "My Attendance",
         url: "/dashboard/student/my-attendance",
         icon: Calendar,
+    },
+    {
+        title: "Announcements",
+        url: "/dashboard/announcements",
+        icon: Bell,
     },
     {
         title: "Search",
@@ -95,9 +137,34 @@ const wardenItems = [
         icon: Home,
     },
     {
-        title: "Attendance",
+        title: "Mark Attendance",
         url: "/dashboard/warden/attendance",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Students",
+        url: "/dashboard/warden/students",
+        icon: Users,
+    },
+    {
+        title: "Add Student",
+        url: "/dashboard/warden/students/add",
         icon: UserPlus,
+    },
+    {
+        title: "Analytics",
+        url: "/dashboard/warden/analytics",
+        icon: BarChart3,
+    },
+    {
+        title: "My Announcements",
+        url: "/dashboard/warden/announcements",
+        icon: Megaphone,
+    },
+    {
+        title: "View All Announcements",
+        url: "/dashboard/announcements",
+        icon: Bell,
     },
 ]
 
@@ -145,19 +212,18 @@ export default function AppSidebar() {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <div className="py-6 flex items-center justify-start gap-4 px-2">
+                        <DropdownMenuForSidebarUserMoreOptions user={user}>
+                            <div className="py-6 flex items-center justify-start gap-4 px-2 cursor-pointer hover:bg-sidebar-accent rounded-md transition-colors">
                                 <Avatar className="rounded-lg text-3xl">
                                     <AvatarImage src="https://github.com/shadcn.png" />
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
-                                <div className="flex flex-col">
-                                    <p className="font-bold text-sm">{user?.usn_id}</p>
-                                    <p className="text-xs">{user?.role?.charAt(0).toUpperCase()}{user?.role?.slice(1)}</p>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                    <p className="font-bold text-sm truncate">{user?.name || user?.usn_id}</p>
+                                    <p className="text-xs text-muted-foreground capitalize truncate">{user?.role}</p>
                                 </div>
-                                <DropdownMenuForSidebarUserMoreOptions user={user} />
                             </div>
-                        </SidebarMenuButton>
+                        </DropdownMenuForSidebarUserMoreOptions>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

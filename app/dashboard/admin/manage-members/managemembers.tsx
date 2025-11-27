@@ -28,6 +28,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
     Table,
     TableBody,
     TableCell,
@@ -254,6 +261,10 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
             "assigned_floor": false,
         })
     const [rowSelection, setRowSelection] = React.useState({})
+    const [pagination, setPagination] = React.useState({
+        pageIndex: 0,
+        pageSize: 10,
+    })
 
     const table = useReactTable({
         data,
@@ -266,17 +277,19 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
+        onPaginationChange: setPagination,
         state: {
             sorting,
             columnFilters,
             columnVisibility,
             rowSelection,
+            pagination,
         },
     })
 
     return (
-        <div className="w-full md:w-[700px] lg:w-[900px]">
-            <div className="flex items-center gap-2 py-4">
+        <div className="w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-4">
                 <Input
                     placeholder="Search names..."
                     value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -285,34 +298,53 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
                     }
                     className="max-w-sm"
                 />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="ml-auto">
-                            Columns <ChevronDown />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {table
-                            .getAllColumns()
-                            .filter((column) => column.getCanHide())
-                            .map((column) => {
-                                return (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        className="capitalize"
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                            column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                )
-                            })}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-2 ml-auto">
+                    <Select
+                        value={table.getState().pagination.pageSize.toString()}
+                        onValueChange={(value) => {
+                            table.setPageSize(Number(value))
+                        }}
+                    >
+                        <SelectTrigger className="w-[130px]">
+                            <SelectValue placeholder="Page size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="5">5 per page</SelectItem>
+                            <SelectItem value="10">10 per page</SelectItem>
+                            <SelectItem value="20">20 per page</SelectItem>
+                            <SelectItem value="50">50 per page</SelectItem>
+                            <SelectItem value="100">100 per page</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                Columns <ChevronDown />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {table
+                                .getAllColumns()
+                                .filter((column) => column.getCanHide())
+                                .map((column) => {
+                                    return (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            className="capitalize"
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    )
+                                })}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
-            <div className="overflow-hidden rounded-md border">
+            <div className="overflow-x-auto rounded-md border">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -362,12 +394,27 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <div className="text-muted-foreground flex-1 text-sm">
-                    {table.getFilteredSelectedRowModel().rows.length} of{" "}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
+            <div className="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 py-4 gap-2">
+                <div className="text-muted-foreground text-sm">
+                    Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{" "}
+                    {Math.min(
+                        (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+                        table.getFilteredRowModel().rows.length
+                    )}{" "}
+                    of {table.getFilteredRowModel().rows.length} entries
+                    {table.getFilteredSelectedRowModel().rows.length > 0 &&
+                        ` (${table.getFilteredSelectedRowModel().rows.length} selected)`
+                    }
                 </div>
-                <div className="space-x-2">
+                <div className="flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.setPageIndex(0)}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        First
+                    </Button>
                     <Button
                         variant="outline"
                         size="sm"
@@ -376,6 +423,10 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
                     >
                         Previous
                     </Button>
+                    <div className="text-sm font-medium">
+                        Page {table.getState().pagination.pageIndex + 1} of{" "}
+                        {table.getPageCount()}
+                    </div>
                     <Button
                         variant="outline"
                         size="sm"
@@ -383,6 +434,14 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
                         disabled={!table.getCanNextPage()}
                     >
                         Next
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Last
                     </Button>
                 </div>
             </div>
