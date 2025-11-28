@@ -455,6 +455,23 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
                     }
                     className="max-w-sm"
                 />
+                <Select
+                    value={(table.getColumn("role")?.getFilterValue() as string) ?? "all"}
+                    onValueChange={(value) =>
+                        table.getColumn("role")?.setFilterValue(value === "all" ? "" : value)
+                    }
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="warden">Warden</SelectItem>
+                        <SelectItem value="student">Student</SelectItem>
+                        <SelectItem value="canteen manager">Canteen Manager</SelectItem>
+                    </SelectContent>
+                </Select>
                 <div className="flex gap-2 ml-auto">
                     <Select
                         value={table.getState().pagination.pageSize.toString()}

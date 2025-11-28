@@ -25,9 +25,6 @@ const formSchema = z.object({
     username: z.string().min(2, {
         message: "User must be at least 2 characters.",
     }),
-    password: z.string().min(4, {
-        message: "Password must be at least 4 characters.",
-    }),
     phone: z.string().min(10, {
         message: "Phone number must be at least 10 characters.",
     }),
@@ -42,12 +39,11 @@ const formSchema = z.object({
 export default function AddCanteenManagerForm({ user, availableBuildingsAndFloors }: { user: UserPayload, availableBuildingsAndFloors: AvailableBuildingsAndFloors[] }) {
     const [selectedAllocatedBuilding, setSelectedAllocatedBuilding] = useState<AvailableBuildingsAndFloors | null>(null);
     const [availableRooms, setAvailableRooms] = useState<{ room_name: string }[]>([]);
-    
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "",
-            password: "",
             phone: "",
             email: "",
             allocated_building: "",
@@ -75,7 +71,7 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
             return;
         }
 
-        const res = await createUser(values.username, values.email, values.phone, values.password, "canteen manager", values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor, values.allocated_room);
+        const res = await createUser(values.username, values.email, values.phone, values.phone, "canteen manager", values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor, values.allocated_room);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -96,19 +92,6 @@ export default function AddCanteenManagerForm({ user, availableBuildingsAndFloor
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input placeholder="Canteen Manager name here..." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <Input type="password" placeholder="Canteen Manager password here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

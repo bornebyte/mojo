@@ -32,15 +32,13 @@ import { LogIn, Sparkles, Lock, User, Shield } from "lucide-react"
 import Link from "next/link"
 
 const loginFormSchema = z.object({
-    username: z.string().min(4, {
-        message: "USN ID must be at least 4 characters."
-    }).max(25, {
-        message: "USN ID must be at most 25 characters."
+    email: z.string().email({
+        message: "Please enter a valid email address."
     }),
     password: z.string().min(4, {
         message: "Password must be at least 4 characters."
-    }).max(10, {
-        message: "Password must be at most 10 characters."
+    }).max(20, {
+        message: "Password must be at most 20 characters."
     }),
     role: z.enum(["student", "warden", "admin", "canteen manager"]),
 })
@@ -52,15 +50,15 @@ export function LoginForm() {
     const form = useForm<z.infer<typeof loginFormSchema>>({
         resolver: zodResolver(loginFormSchema),
         defaultValues: {
-            username: "",
+            email: "",
             password: "",
-            role: "admin",
+            role: "student",
         },
     })
 
     function onSubmit(values: z.infer<typeof loginFormSchema>) {
         setIsLoading(true)
-        loginUser(values.username, values.password, values.role).then((response) => {
+        loginUser(values.email, values.password, values.role).then((response) => {
             toast.success(response.message)
             if (response.loginstatus) {
                 if (response.user) {
@@ -93,11 +91,9 @@ export function LoginForm() {
                 {/* Header */}
                 <div className="text-center space-y-2">
                     <div className="flex items-center justify-center gap-2 mb-4">
-                        <Sparkles className="h-8 w-8 text-primary animate-pulse" />
                         <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-primary">
                             Mojo
                         </h1>
-                        <Sparkles className="h-8 w-8 text-primary animate-pulse" />
                     </div>
                     <p className="text-lg text-muted-foreground font-medium">
                         Welcome back! Please login to continue
@@ -120,16 +116,17 @@ export function LoginForm() {
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                                 <FormField
                                     control={form.control}
-                                    name="username"
+                                    name="email"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="flex items-center gap-2">
                                                 <User className="h-4 w-4" />
-                                                Email or USN ID
+                                                Email Address
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Enter your email or USN ID"
+                                                    type="email"
+                                                    placeholder="Enter your email address"
                                                     {...field}
                                                     className="transition-all focus-visible:ring-2 focus-visible:ring-primary"
                                                     disabled={isLoading}

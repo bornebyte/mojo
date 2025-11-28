@@ -23,9 +23,6 @@ const formSchema = z.object({
     username: z.string().min(2, {
         message: "User must be at least 2 characters.",
     }),
-    password: z.string().min(4, {
-        message: "Password must be at least 4 characters.",
-    }),
     phone: z.string().min(10, {
         message: "Phone number must be at least 10 characters.",
     }),
@@ -39,7 +36,6 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "",
-            password: "",
             phone: "",
             email: "",
         },
@@ -52,7 +48,7 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
             return;
         }
         // For admins, usn_id can be the email or another unique identifier. Here we pass the email.
-        const res = await createUser(values.username, values.email, values.phone, values.password, 'admin', values.email, user.name, user.usn_id, user.role);
+        const res = await createUser(values.username, values.email, values.phone, values.phone, 'admin', values.email, user.name, user.usn_id, user.role);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -73,19 +69,6 @@ export default function AddAdminForm({ user }: { user: UserPayload }) {
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input placeholder="Admin name here..." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <Input type="password" placeholder="Admin password here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

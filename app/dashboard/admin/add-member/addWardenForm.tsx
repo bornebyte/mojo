@@ -26,9 +26,6 @@ const formSchema = z.object({
     username: z.string().min(2, {
         message: "User must be at least 2 characters.",
     }),
-    password: z.string().min(4, {
-        message: "Password must be at least 4 characters.",
-    }),
     phone: z.string().min(10, {
         message: "Phone number must be at least 10 characters.",
     }),
@@ -52,7 +49,6 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors }: { u
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "",
-            password: "",
             phone: "",
             email: "",
             allocated_building: "",
@@ -70,7 +66,7 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors }: { u
             return;
         }
 
-        const res = await createUser(values.username, values.email, values.phone, values.password, 'warden', values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor ? values.allocated_floor : undefined, values.allocated_room, values.assigned_building, values.assigned_floors);
+        const res = await createUser(values.username, values.email, values.phone, values.phone, 'warden', values.email, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor ? values.allocated_floor : undefined, values.allocated_room, values.assigned_building, values.assigned_floors);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -115,19 +111,6 @@ export default function AddWardenForm({ user, availableBuildingsAndFloors }: { u
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input placeholder="Warden name here..." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <Input type="password" placeholder="Warden password here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

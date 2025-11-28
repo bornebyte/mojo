@@ -124,7 +124,7 @@ const studentItems = [
     },
     {
         title: "My Attendance",
-        url: "/dashboard/student/my-attendance",
+        url: "/dashboard/student/attendance",
         icon: Calendar,
     },
     {

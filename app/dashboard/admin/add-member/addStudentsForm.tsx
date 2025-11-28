@@ -25,9 +25,6 @@ const formSchema = z.object({
     username: z.string().min(2, {
         message: "User must be at least 2 characters.",
     }),
-    password: z.string().min(4, {
-        message: "Password must be at least 4 characters.",
-    }),
     phone: z.string().min(10, {
         message: "Phone number must be at least 10 characters.",
     }),
@@ -52,7 +49,6 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
         resolver: zodResolver(formSchema),
         defaultValues: {
             username: "",
-            password: "",
             phone: "",
             email: "",
             usn_id: "",
@@ -85,7 +81,7 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
             console.error("User name or usn_id is missing from JWT payload:", user);
             return;
         }
-        const res = await createUser(values.username, values.email, values.phone, values.password, 'student', values.usn_id, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor, values.allocated_room);
+        const res = await createUser(values.username, values.email, values.phone, values.phone, 'student', values.usn_id, user.name, user.usn_id, user.role, values.allocated_building, values.allocated_floor, values.allocated_room);
         if (res.accountcreated) {
             toast.success(res.message as string)
             form.reset()
@@ -106,19 +102,6 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                                 <Input placeholder="Student name here..." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <Input type="password" placeholder="Student password here..." {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>

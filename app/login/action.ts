@@ -5,7 +5,7 @@ import { SignJWT } from 'jose';
 import { cookies } from "next/headers";
 import { createUserTable } from "@/app/dashboard/admin/add-member/action";
 
-export const loginUser = async (usn_id: string, password: string, role: string) => {
+export const loginUser = async (email: string, password: string, role: string) => {
   try {
     await createUserTable();
 
@@ -17,7 +17,7 @@ export const loginUser = async (usn_id: string, password: string, role: string) 
       throw new Error("JWT_SECRET is not set");
     }
 
-    const existingUser = await sql`SELECT * FROM users WHERE usn_id = ${usn_id} AND role = ${role}`;
+    const existingUser = await sql`SELECT * FROM users WHERE email = ${email} AND role = ${role}`;
 
     if (existingUser.length === 0) {
       return { message: "User does not exist", loginstatus: false };
