@@ -24,8 +24,8 @@ export default function Home() {
   return (
     <main className="flex-1">
       {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gradient-to-b from-background to-muted/50">
-        <div className="container px-4 md:px-6">
+      <section className="w-full py-4 md:py-6 lg:py-10 xl:py-16 bg-gradient-to-b from-background to-muted/50">
+        <div className="container px-6 md:px-10">
           <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">

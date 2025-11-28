@@ -229,7 +229,7 @@ export default function AboutPage() {
         </div>
         {/* Creator Section */}
         <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-center">The Creator</h2>
+          <h2 className="text-3xl font-bold text-center">The Developer</h2>
           <Card className="border-2">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -254,7 +254,7 @@ export default function AboutPage() {
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href="https://linkedin.com/in/shubham-shah-54b8bb1b8/" target="_blank" rel="noopener noreferrer">
+                      <Link href="https://www.linkedin.com/in/bornebyte/" target="_blank" rel="noopener noreferrer">
                         <Linkedin className="h-4 w-4 mr-2" />
                         LinkedIn
                       </Link>

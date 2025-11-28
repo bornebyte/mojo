@@ -214,7 +214,7 @@ export default function AppSidebar() {
     }
     return (
         <Sidebar>
-            <SidebarContent>
+            <SidebarContent className="md:py-16">
                 <SidebarGroup>
                     <SidebarGroupLabel>Menu</SidebarGroupLabel>
                     <SidebarGroupContent>

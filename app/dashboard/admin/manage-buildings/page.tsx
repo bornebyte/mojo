@@ -16,15 +16,15 @@ const ManageBuildings = async () => {
     floors: typeof building.floors === 'string' ? JSON.parse(building.floors as string) : building.floors,
   }));
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6 max-w-7xl">
+    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6 max-w-full">
       <div>
-        <h1 className="text-3xl md:text-4xl font-bold">Manage Buildings</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-3xl md:text-4xl font-bold text-center">Manage Buildings</h1>
+        <p className="text-muted-foreground mt-2 text-center">
           Add new buildings and view existing room allocations
         </p>
       </div>
-      <Tabs defaultValue="view" className="w-full">
-        <TabsList className="sm:w-auto">
+      <Tabs defaultValue="view" className="w-full flex justify-center items-center">
+        <TabsList className="sm:w-fit">
           <TabsTrigger value="view" className="flex-1 sm:flex-none">View Rooms</TabsTrigger>
           <TabsTrigger value="add" className="flex-1 sm:flex-none">Add Buildings</TabsTrigger>
         </TabsList>
