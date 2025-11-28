@@ -49,7 +49,7 @@ export type BuildingFormValues = z.infer<typeof formSchema>;
 
 type FloorPlan = { floor: number; roomCount: number };
 
-export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
+export default function ManageBuildingsForm({ user, onBuildingAdded }: { user: UserPayload, onBuildingAdded?: () => void }) {
     const [floorPlans, setFloorPlans] = useState<FloorPlan[]>([]);
     const [showRoomDetails, setShowRoomDetails] = useState(false);
 
@@ -73,6 +73,10 @@ export default function ManageBuildingsForm({ user }: { user: UserPayload }) {
             form.reset();
             setShowRoomDetails(false);
             setFloorPlans([]);
+            // Call the callback to refresh the buildings list
+            if (onBuildingAdded) {
+                onBuildingAdded();
+            }
         } else {
             toast.error(result.message);
         }

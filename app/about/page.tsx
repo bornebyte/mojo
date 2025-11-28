@@ -242,6 +242,11 @@ export default function AboutPage() {
                     <h3 className="text-2xl font-semibold">Shubham Shah</h3>
                     <p className="text-muted-foreground">Full Stack Developer & Open Source Enthusiast</p>
                     <p className="text-sm text-muted-foreground mt-1">@bornebyte</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      <a href="mailto:shahshubham1888@gmail.com" className="text-primary hover:underline">
+                        shahshubham1888@gmail.com
+                      </a>
+                    </p>
                   </div>
                   <p className="text-muted-foreground">
                     Passionate about building tools that solve real-world problems. Mojo was created to address the inefficiencies in traditional hostel management systems, bringing modern technology to educational institutions.

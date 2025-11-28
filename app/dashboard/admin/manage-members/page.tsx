@@ -7,6 +7,7 @@ import { UserPayload } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { getFromCache, saveToCache } from "@/lib/cache-utils";
 
 const AdminManageMembers = () => {
   const [allUsers, setAllUsers] = useState<UserPayload[]>([]);
@@ -14,19 +15,11 @@ const AdminManageMembers = () => {
 
   const fetchUsers = async (forceRefresh = false) => {
     if (!forceRefresh) {
-      const cached = localStorage.getItem('admin_all_users');
+      const cached = getFromCache<UserPayload[]>('admin_all_users', 'admin');
       if (cached) {
-        try {
-          const { data, timestamp } = JSON.parse(cached);
-          const fiveMinutes = 5 * 60 * 1000;
-          if (Date.now() - timestamp < fiveMinutes) {
-            setAllUsers(data);
-            setLoading(false);
-            return;
-          }
-        } catch (e) {
-          console.error('Error parsing cache:', e);
-        }
+        setAllUsers(cached);
+        setLoading(false);
+        return;
       }
     }
 
@@ -34,10 +27,7 @@ const AdminManageMembers = () => {
     try {
       const users = await getAllUsers() as UserPayload[];
       setAllUsers(users);
-      localStorage.setItem('admin_all_users', JSON.stringify({
-        data: users,
-        timestamp: Date.now()
-      }));
+      saveToCache('admin_all_users', users);
     } catch (error) {
       toast.error("Failed to fetch users");
       console.error(error);

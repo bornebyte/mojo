@@ -108,9 +108,9 @@ export const getAttendanceTrends = async (days: number = 7) => {
             SELECT 
                 DATE(timestamp) as date,
                 status,
-                COUNT(*) as count
+                COUNT(*)::INTEGER as count
             FROM attendance 
-            WHERE DATE(timestamp) >= CURRENT_DATE - ${days}
+            WHERE timestamp >= CURRENT_DATE - INTERVAL '1 day' * ${days}
             GROUP BY DATE(timestamp), status
             ORDER BY date DESC
         `;
@@ -118,7 +118,7 @@ export const getAttendanceTrends = async (days: number = 7) => {
         return { success: true, data: result };
     } catch (error) {
         console.error("Error fetching attendance trends:", error);
-        return { success: false, message: "Failed to fetch attendance trends" };
+        return { success: false, message: "Failed to fetch attendance trends", data: [] };
     }
 };
 
@@ -323,5 +323,110 @@ export const toggleAdminAnnouncementStatus = async (id: number) => {
     } catch (error) {
         console.error("Error toggling announcement:", error);
         return { success: false, message: "Failed to update announcement" };
+    }
+};
+
+// Get violations statistics for dashboard
+export const getViolationsDashboardStats = async (days: number = 30) => {
+    try {
+        // Ensure violations table exists
+        await sql`CREATE TABLE IF NOT EXISTS violations (
+            id SERIAL PRIMARY KEY,
+            student_id INTEGER NOT NULL REFERENCES users(id),
+            violation_type VARCHAR(50) NOT NULL,
+            severity VARCHAR(20) NOT NULL,
+            title VARCHAR(500) NOT NULL,
+            description TEXT,
+            location VARCHAR(200),
+            damage_cost DECIMAL(10, 2),
+            evidence_photo_url TEXT,
+            status VARCHAR(50) NOT NULL DEFAULT 'pending',
+            action_taken TEXT,
+            fine_amount DECIMAL(10, 2),
+            fine_paid BOOLEAN DEFAULT false,
+            reported_by INTEGER NOT NULL REFERENCES users(id),
+            reviewed_by INTEGER REFERENCES users(id),
+            incident_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            resolved_at TIMESTAMP
+        )`;
+
+        // Get total counts by severity
+        const severityCounts = await sql`
+            SELECT 
+                severity,
+                COUNT(*)::INTEGER as count
+            FROM violations
+            WHERE incident_date >= CURRENT_DATE - INTERVAL '1 day' * ${days}
+            GROUP BY severity
+        `;
+
+        // Get total counts by status
+        const statusCounts = await sql`
+            SELECT 
+                status,
+                COUNT(*)::INTEGER as count
+            FROM violations
+            WHERE incident_date >= CURRENT_DATE - INTERVAL '1 day' * ${days}
+            GROUP BY status
+        `;
+
+        // Get daily violation trends
+        const dailyTrends = await sql`
+            SELECT 
+                DATE(incident_date) as date,
+                COUNT(*)::INTEGER as count,
+                SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END)::INTEGER as critical_count
+            FROM violations
+            WHERE incident_date >= CURRENT_DATE - INTERVAL '1 day' * ${days}
+            GROUP BY DATE(incident_date)
+            ORDER BY date DESC
+        `;
+
+        // Get fine statistics
+        const fineStats = await sql`
+            SELECT 
+                COALESCE(SUM(fine_amount), 0)::DECIMAL as total_fines,
+                COALESCE(SUM(CASE WHEN fine_paid THEN fine_amount ELSE 0 END), 0)::DECIMAL as collected_fines,
+                COUNT(CASE WHEN fine_amount > 0 AND NOT fine_paid THEN 1 END)::INTEGER as pending_fines_count
+            FROM violations
+            WHERE incident_date >= CURRENT_DATE - INTERVAL '1 day' * ${days}
+        `;
+
+        // Get violation types breakdown
+        const typeBreakdown = await sql`
+            SELECT 
+                violation_type,
+                COUNT(*)::INTEGER as count
+            FROM violations
+            WHERE incident_date >= CURRENT_DATE - INTERVAL '1 day' * ${days}
+            GROUP BY violation_type
+            ORDER BY count DESC
+        `;
+
+        return {
+            success: true,
+            data: {
+                severityCounts,
+                statusCounts,
+                dailyTrends,
+                fineStats: fineStats[0] || { total_fines: 0, collected_fines: 0, pending_fines_count: 0 },
+                typeBreakdown
+            }
+        };
+    } catch (error) {
+        console.error("Error fetching violations dashboard stats:", error);
+        return {
+            success: false,
+            message: "Failed to fetch violations stats",
+            data: {
+                severityCounts: [],
+                statusCounts: [],
+                dailyTrends: [],
+                fineStats: { total_fines: 0, collected_fines: 0, pending_fines_count: 0 },
+                typeBreakdown: []
+            }
+        };
     }
 };

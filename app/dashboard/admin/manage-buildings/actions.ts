@@ -126,3 +126,98 @@ export async function getBuildings(): Promise<BuildingData[]> {
     }
 
 }
+
+export async function deleteBuilding(buildingId: number) {
+    try {
+        // Check if there are any students allocated to this building
+        const studentsCheck = await sql`
+            SELECT COUNT(*)::int as count 
+            FROM users 
+            WHERE allocated_building = (SELECT name FROM buildings WHERE id = ${buildingId})
+        `;
+
+        if (studentsCheck[0]?.count > 0) {
+            return {
+                success: false,
+                message: `Cannot delete building. ${studentsCheck[0].count} student(s) are still allocated to this building.`
+            };
+        }
+
+        // Delete the building (cascade will delete floors and rooms)
+        await sql`DELETE FROM buildings WHERE id = ${buildingId}`;
+
+        return { success: true, message: "Building deleted successfully!" };
+    } catch (error) {
+        console.error("Failed to delete building:", error);
+        return { success: false, message: "Failed to delete building. Please try again." };
+    }
+}
+
+export async function renameBuilding(buildingId: number, newName: string) {
+    try {
+        // Check if building name already exists
+        const existingBuilding = await sql`
+            SELECT id FROM buildings WHERE name = ${newName} AND id != ${buildingId}
+        `;
+
+        if (existingBuilding.length > 0) {
+            return { success: false, message: "A building with this name already exists." };
+        }
+
+        // Get old name for updating user allocations
+        const oldNameResult = await sql`SELECT name FROM buildings WHERE id = ${buildingId}`;
+        const oldName = oldNameResult[0]?.name;
+
+        if (!oldName) {
+            return { success: false, message: "Building not found." };
+        }
+
+        // Update building name
+        await sql`UPDATE buildings SET name = ${newName} WHERE id = ${buildingId}`;
+
+        // Update user allocations
+        await sql`UPDATE users SET allocated_building = ${newName} WHERE allocated_building = ${oldName}`;
+
+        return { success: true, message: "Building renamed successfully!" };
+    } catch (error) {
+        console.error("Failed to rename building:", error);
+        return { success: false, message: "Failed to rename building. Please try again." };
+    }
+}
+
+export async function deleteManyBuildings(buildingIds: number[]) {
+    try {
+        // Check for allocated students in any of these buildings
+        const studentsCheck = await sql`
+            SELECT 
+                b.id,
+                b.name,
+                COUNT(u.id)::int as student_count
+            FROM buildings b
+            LEFT JOIN users u ON u.allocated_building = b.name
+            WHERE b.id = ANY(${buildingIds})
+            GROUP BY b.id, b.name
+        `;
+
+        const buildingsWithStudents = studentsCheck.filter(b => b.student_count > 0);
+
+        if (buildingsWithStudents.length > 0) {
+            const buildingNames = buildingsWithStudents.map(b => `${b.name} (${b.student_count} students)`).join(', ');
+            return {
+                success: false,
+                message: `Cannot delete the following buildings with allocated students: ${buildingNames}`
+            };
+        }
+
+        // Delete buildings (cascade will delete floors and rooms)
+        await sql`DELETE FROM buildings WHERE id = ANY(${buildingIds})`;
+
+        return {
+            success: true,
+            message: `Successfully deleted ${buildingIds.length} building(s)!`
+        };
+    } catch (error) {
+        console.error("Failed to delete buildings:", error);
+        return { success: false, message: "Failed to delete buildings. Please try again." };
+    }
+}

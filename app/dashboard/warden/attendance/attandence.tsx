@@ -6,6 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { getAllStudentsForAttendance, markAttendance } from "./actions";
 import { toast } from "sonner";
 import { LoaderCircle, UserCheck, UserX, Plane } from "lucide-react";
+import { getFromCache, saveToCache } from "@/lib/cache-utils";
 import {
     Dialog,
     DialogContent,
@@ -27,9 +28,36 @@ const AttendenceComponent = () => {
     const [pendingStatus, setPendingStatus] = useState<"absent" | "on_leave">("absent");
 
     useEffect(() => {
-        fetchStudents();
+        fetchStudentsWithCache();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const fetchStudentsWithCache = async (forceRefresh = false) => {
+        try {
+            // Check cache first
+            if (!forceRefresh) {
+                const cached = getFromCache<UserPayload[]>('warden_attendance_students', user?.role)
+                if (cached) {
+                    setStudents(cached)
+                    setLoading(true)
+                    return
+                }
+            }
+
+            // Fetch fresh data
+            const response = await getAllStudentsForAttendance(user);
+            if (response.success) {
+                setStudents(response.data as UserPayload[]);
+                setLoading(true);
+                saveToCache('warden_attendance_students', response.data)
+            } else {
+                toast.error(response.message);
+            }
+        } catch (error) {
+            toast.error("Failed to fetch students");
+            console.error(error);
+        }
+    };
 
     const fetchStudents = async () => {
         const response = await getAllStudentsForAttendance(user);
@@ -52,7 +80,7 @@ const AttendenceComponent = () => {
         const response = await markAttendance(student, status, user);
         if (response.success) {
             toast.success(response.message);
-            fetchStudents();
+            fetchStudentsWithCache(true);
         } else {
             toast.error(response.message);
         }
@@ -67,7 +95,7 @@ const AttendenceComponent = () => {
             setShowReasonDialog(false);
             setReason("");
             setSelectedStudent(null);
-            fetchStudents();
+            fetchStudentsWithCache(true);
         } else {
             toast.error(response.message);
         }

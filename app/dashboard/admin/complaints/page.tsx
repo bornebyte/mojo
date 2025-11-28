@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from "sonner"
 import { getUserFromTokenCookie } from "@/app/actions"
 import { getAllComplaints, updateComplaintStatus } from "@/app/dashboard/student/actions"
-import { AlertCircle, CheckCircle, Clock, XCircle, MessageSquare, Filter } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, XCircle, MessageSquare, Filter, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
+import { getFromCache, saveToCache } from "@/lib/cache-utils"
 
 type Complaint = {
     id: number;
@@ -50,27 +51,49 @@ export default function AdminComplaintsPage() {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const user = await getUserFromTokenCookie()
-                if (user && user.name) {
-                    setUserName(user.name)
-                }
-
-                const complaintsResult = await getAllComplaints()
-                if (complaintsResult.success && complaintsResult.data) {
-                    setComplaints(complaintsResult.data as Complaint[])
-                    setFilteredComplaints(complaintsResult.data as Complaint[])
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error)
-                toast.error("Failed to load complaints")
-            } finally {
-                setLoading(false)
+            await fetchComplaintsWithCache()
+            const user = await getUserFromTokenCookie()
+            if (user && user.name) {
+                setUserName(user.name)
             }
         }
 
         fetchData()
     }, [])
+
+    const fetchComplaintsWithCache = async (forceRefresh = false) => {
+        setLoading(true)
+        try {
+            // Check cache first
+            if (!forceRefresh) {
+                const cached = getFromCache<Complaint[]>('admin_complaints', 'admin')
+                if (cached) {
+                    setComplaints(cached)
+                    setFilteredComplaints(cached)
+                    setLoading(false)
+                    return
+                }
+            }
+
+            // Fetch fresh data
+            const complaintsResult = await getAllComplaints()
+            if (complaintsResult.success && complaintsResult.data) {
+                setComplaints(complaintsResult.data as Complaint[])
+                setFilteredComplaints(complaintsResult.data as Complaint[])
+                saveToCache('admin_complaints', complaintsResult.data)
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error)
+            toast.error("Failed to load complaints")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleRefresh = async () => {
+        await fetchComplaintsWithCache(true)
+        toast.success("Complaints refreshed")
+    }
 
     useEffect(() => {
         let filtered = [...complaints]
@@ -119,10 +142,7 @@ export default function AdminComplaintsPage() {
                 setDialogOpen(false)
 
                 // Refresh complaints
-                const complaintsResult = await getAllComplaints()
-                if (complaintsResult.success && complaintsResult.data) {
-                    setComplaints(complaintsResult.data as Complaint[])
-                }
+                await fetchComplaintsWithCache(true)
             } else {
                 toast.error(result.message || "Failed to update complaint")
             }
@@ -183,11 +203,17 @@ export default function AdminComplaintsPage() {
 
     return (
         <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Complaints Management</h1>
-                <p className="text-muted-foreground">
-                    View and respond to student complaints
-                </p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-3xl font-bold mb-2">Complaints Management</h1>
+                    <p className="text-muted-foreground">
+                        View and respond to student complaints
+                    </p>
+                </div>
+                <Button onClick={handleRefresh} variant="outline">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                </Button>
             </div>
 
             {/* Statistics */}

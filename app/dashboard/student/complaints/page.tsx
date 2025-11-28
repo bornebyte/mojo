@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "sonner"
 import { getUserFromTokenCookie } from "@/app/actions"
 import { getStudentComplaints, submitComplaint } from "../actions"
-import { AlertCircle, CheckCircle, Clock, XCircle, Plus, MessageSquare } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, XCircle, Plus, MessageSquare, RefreshCw } from "lucide-react"
 import { format } from "date-fns"
+import { getFromCache, saveToCache } from "@/lib/cache-utils"
 
 type Complaint = {
     id: number;
@@ -49,28 +50,53 @@ export default function StudentComplaintsPage() {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const user = await getUserFromTokenCookie()
-                if (user && user.id) {
-                    setUserId(user.id)
-                    setUserName(user.name || "")
-                    setUserUSN(user.usn_id || "")
-
-                    const complaintsResult = await getStudentComplaints(user.id)
-                    if (complaintsResult.success && complaintsResult.data) {
-                        setComplaints(complaintsResult.data as Complaint[])
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error)
-                toast.error("Failed to load complaints")
-            } finally {
+            const user = await getUserFromTokenCookie()
+            if (user && user.id) {
+                setUserId(user.id)
+                setUserName(user.name || "")
+                setUserUSN(user.usn_id || "")
+                await fetchComplaintsWithCache(user.id)
+            } else {
                 setLoading(false)
             }
         }
 
         fetchData()
     }, [])
+
+    const fetchComplaintsWithCache = async (studentId: number, forceRefresh = false) => {
+        setLoading(true)
+        try {
+            // Check cache first
+            if (!forceRefresh) {
+                const cached = getFromCache<Complaint[]>(`student_complaints_${studentId}`, 'student')
+                if (cached) {
+                    setComplaints(cached)
+                    setLoading(false)
+                    return
+                }
+            }
+
+            // Fetch fresh data
+            const complaintsResult = await getStudentComplaints(studentId)
+            if (complaintsResult.success && complaintsResult.data) {
+                setComplaints(complaintsResult.data as Complaint[])
+                saveToCache(`student_complaints_${studentId}`, complaintsResult.data)
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error)
+            toast.error("Failed to load complaints")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleRefresh = async () => {
+        if (userId) {
+            await fetchComplaintsWithCache(userId, true)
+            toast.success("Complaints refreshed")
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -108,10 +134,7 @@ export default function StudentComplaintsPage() {
                 })
 
                 // Refresh complaints
-                const complaintsResult = await getStudentComplaints(userId)
-                if (complaintsResult.success && complaintsResult.data) {
-                    setComplaints(complaintsResult.data as Complaint[])
-                }
+                await fetchComplaintsWithCache(userId, true)
             } else {
                 toast.error(result.message || "Failed to submit complaint")
             }
@@ -179,212 +202,218 @@ export default function StudentComplaintsPage() {
                         Submit and track your complaints and issues
                     </p>
                 </div>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="mt-4 md:mt-0">
-                            <Plus className="mr-2 h-4 w-4" />
-                            New Complaint
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px]">
-                        <DialogHeader>
-                            <DialogTitle>Submit a Complaint</DialogTitle>
-                            <DialogDescription>
-                                Describe your issue or concern. We&apos;ll review it and get back to you.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="category">Category *</Label>
-                                    <Select
-                                        value={formData.category}
-                                        onValueChange={(value) => setFormData({ ...formData, category: value })}
-                                    >
-                                        <SelectTrigger id="category">
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="hostel_facilities">Hostel Facilities</SelectItem>
-                                            <SelectItem value="food_quality">Food Quality</SelectItem>
-                                            <SelectItem value="hygiene">Hygiene & Cleanliness</SelectItem>
-                                            <SelectItem value="maintenance">Maintenance</SelectItem>
-                                            <SelectItem value="electricity">Electricity</SelectItem>
-                                            <SelectItem value="water_supply">Water Supply</SelectItem>
-                                            <SelectItem value="security">Security</SelectItem>
-                                            <SelectItem value="wifi_internet">WiFi/Internet</SelectItem>
-                                            <SelectItem value="staff_behavior">Staff Behavior</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                <div className="flex gap-2 mt-4 md:mt-0">
+                    <Button onClick={handleRefresh} variant="outline">
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Refresh
+                    </Button>
+                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Complaint
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                                <DialogTitle>Submit a Complaint</DialogTitle>
+                                <DialogDescription>
+                                    Describe your issue or concern. We&apos;ll review it and get back to you.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="category">Category *</Label>
+                                        <Select
+                                            value={formData.category}
+                                            onValueChange={(value) => setFormData({ ...formData, category: value })}
+                                        >
+                                            <SelectTrigger id="category">
+                                                <SelectValue placeholder="Select category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="hostel_facilities">Hostel Facilities</SelectItem>
+                                                <SelectItem value="food_quality">Food Quality</SelectItem>
+                                                <SelectItem value="hygiene">Hygiene & Cleanliness</SelectItem>
+                                                <SelectItem value="maintenance">Maintenance</SelectItem>
+                                                <SelectItem value="electricity">Electricity</SelectItem>
+                                                <SelectItem value="water_supply">Water Supply</SelectItem>
+                                                <SelectItem value="security">Security</SelectItem>
+                                                <SelectItem value="wifi_internet">WiFi/Internet</SelectItem>
+                                                <SelectItem value="staff_behavior">Staff Behavior</SelectItem>
+                                                <SelectItem value="other">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="priority">Priority *</Label>
+                                        <Select
+                                            value={formData.priority}
+                                            onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                                        >
+                                            <SelectTrigger id="priority">
+                                                <SelectValue placeholder="Select priority" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="low">Low</SelectItem>
+                                                <SelectItem value="medium">Medium</SelectItem>
+                                                <SelectItem value="high">High</SelectItem>
+                                                <SelectItem value="urgent">Urgent</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="priority">Priority *</Label>
-                                    <Select
-                                        value={formData.priority}
-                                        onValueChange={(value) => setFormData({ ...formData, priority: value })}
-                                    >
-                                        <SelectTrigger id="priority">
-                                            <SelectValue placeholder="Select priority" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="low">Low</SelectItem>
-                                            <SelectItem value="medium">Medium</SelectItem>
-                                            <SelectItem value="high">High</SelectItem>
-                                            <SelectItem value="urgent">Urgent</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Label htmlFor="subject">Subject *</Label>
+                                    <Input
+                                        id="subject"
+                                        placeholder="Brief description of the issue"
+                                        value={formData.subject}
+                                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                                        required
+                                    />
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="subject">Subject *</Label>
-                                <Input
-                                    id="subject"
-                                    placeholder="Brief description of the issue"
-                                    value={formData.subject}
-                                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Detailed Description *</Label>
-                                <Textarea
-                                    id="description"
-                                    placeholder="Provide detailed information about your complaint..."
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    rows={5}
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setDialogOpen(false)}
-                                    disabled={submitting}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={submitting}>
-                                    {submitting ? "Submitting..." : "Submit Complaint"}
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Detailed Description *</Label>
+                                    <Textarea
+                                        id="description"
+                                        placeholder="Provide detailed information about your complaint..."
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={5}
+                                        required
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setDialogOpen(false)}
+                                        disabled={submitting}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" disabled={submitting}>
+                                        {submitting ? "Submitting..." : "Submit Complaint"}
+                                    </Button>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
 
-            {/* Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{complaints.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">
-                            {complaints.filter(c => c.status === 'pending').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Resolved</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
-                            {complaints.filter(c => c.status === 'resolved').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-medium">Under Review</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">
-                            {complaints.filter(c => c.status === 'reviewing').length}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Complaints List */}
-            <div className="space-y-4">
-                {complaints.length === 0 ? (
+                {/* Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <Card>
-                        <CardContent className="flex flex-col items-center justify-center py-12">
-                            <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-muted-foreground text-center">
-                                No complaints submitted yet
-                            </p>
-                            <p className="text-sm text-muted-foreground text-center mt-2">
-                                Click &quot;New Complaint&quot; to submit your first complaint
-                            </p>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{complaints.length}</div>
                         </CardContent>
                     </Card>
-                ) : (
-                    complaints.map((complaint) => (
-                        <Card key={complaint.id}>
-                            <CardHeader>
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            {getStatusIcon(complaint.status)}
-                                            <CardTitle className="text-lg">{complaint.subject}</CardTitle>
-                                        </div>
-                                        <CardDescription>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
-                                                    {complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1)}
-                                                </span>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}`}>
-                                                    {complaint.priority.charAt(0).toUpperCase() + complaint.priority.slice(1)} Priority
-                                                </span>
-                                                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                                                    {complaint.category.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                                </span>
-                                            </div>
-                                        </CardDescription>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                        {format(new Date(complaint.created_at), 'MMM dd, yyyy HH:mm')}
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <h4 className="text-sm font-semibold mb-2">Description</h4>
-                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                        {complaint.description}
-                                    </p>
-                                </div>
-                                {complaint.response && (
-                                    <div className="border-t pt-4">
-                                        <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                                            <MessageSquare className="h-4 w-4" />
-                                            Response
-                                        </h4>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap mb-2">
-                                            {complaint.response}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Responded by {complaint.responded_by} on {complaint.responded_at ? format(new Date(complaint.responded_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
-                                        </p>
-                                    </div>
-                                )}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-yellow-600">
+                                {complaints.filter(c => c.status === 'pending').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-green-600">
+                                {complaints.filter(c => c.status === 'resolved').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-sm font-medium">Under Review</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-blue-600">
+                                {complaints.filter(c => c.status === 'reviewing').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Complaints List */}
+                <div className="space-y-4">
+                    {complaints.length === 0 ? (
+                        <Card>
+                            <CardContent className="flex flex-col items-center justify-center py-12">
+                                <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
+                                <p className="text-muted-foreground text-center">
+                                    No complaints submitted yet
+                                </p>
+                                <p className="text-sm text-muted-foreground text-center mt-2">
+                                    Click &quot;New Complaint&quot; to submit your first complaint
+                                </p>
                             </CardContent>
                         </Card>
-                    ))
-                )}
+                    ) : (
+                        complaints.map((complaint) => (
+                            <Card key={complaint.id}>
+                                <CardHeader>
+                                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                {getStatusIcon(complaint.status)}
+                                                <CardTitle className="text-lg">{complaint.subject}</CardTitle>
+                                            </div>
+                                            <CardDescription>
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
+                                                        {complaint.status.charAt(0).toUpperCase() + complaint.status.slice(1)}
+                                                    </span>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}`}>
+                                                        {complaint.priority.charAt(0).toUpperCase() + complaint.priority.slice(1)} Priority
+                                                    </span>
+                                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                        {complaint.category.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                                    </span>
+                                                </div>
+                                            </CardDescription>
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                            {format(new Date(complaint.created_at), 'MMM dd, yyyy HH:mm')}
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <h4 className="text-sm font-semibold mb-2">Description</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                            {complaint.description}
+                                        </p>
+                                    </div>
+                                    {complaint.response && (
+                                        <div className="border-t pt-4">
+                                            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                                                <MessageSquare className="h-4 w-4" />
+                                                Response
+                                            </h4>
+                                            <p className="text-sm text-muted-foreground whitespace-pre-wrap mb-2">
+                                                {complaint.response}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Responded by {complaint.responded_by} on {complaint.responded_at ? format(new Date(complaint.responded_at), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                                            </p>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     )

@@ -41,7 +41,8 @@ import {
   RefreshCw,
   Download,
   Calendar,
-  Award
+  Award,
+  ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -54,7 +55,8 @@ import {
   createAdminAnnouncement,
   getAllAdminAnnouncements,
   deleteAdminAnnouncement,
-  toggleAdminAnnouncementStatus
+  toggleAdminAnnouncementStatus,
+  getViolationsDashboardStats
 } from "./actions";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -106,6 +108,7 @@ const DashboardAdminPage = () => {
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
   const [wardenPerformance, setWardenPerformance] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [violationsStats, setViolationsStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDays, setSelectedDays] = useState(7);
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
@@ -134,7 +137,8 @@ const DashboardAdminPage = () => {
         feedbackRes,
         activitiesRes,
         wardenRes,
-        announcementsRes
+        announcementsRes,
+        violationsRes
       ] = await Promise.all([
         getAdminDashboardStats(),
         getAttendanceTrends(selectedDays),
@@ -142,12 +146,18 @@ const DashboardAdminPage = () => {
         getFeedbackCategoryStats(),
         getRecentActivities(10),
         getWardenPerformance(),
-        getAllAdminAnnouncements()
+        getAllAdminAnnouncements(),
+        getViolationsDashboardStats(selectedDays)
       ]);
 
       if (statsRes.success) setStats(statsRes.data as DashboardStats);
       if (trendsRes.success) setAttendanceTrends(trendsRes.data ?? []);
       if (buildingRes.success) setBuildingAttendance(buildingRes.data ?? []);
+      if (feedbackRes.success) setFeedbackStats(feedbackRes.data ?? []);
+      if (activitiesRes.success) setRecentActivities(activitiesRes.data ?? []);
+      if (wardenRes.success) setWardenPerformance(wardenRes.data ?? []);
+      if (announcementsRes.success) setAnnouncements(announcementsRes.data ?? []);
+      if (violationsRes.success) setViolationsStats(violationsRes.data);
       if (feedbackRes.success) setFeedbackStats(feedbackRes.data ?? []);
       if (activitiesRes.success) setRecentActivities(activitiesRes.data ?? []);
       if (wardenRes.success) setWardenPerformance(wardenRes.data ?? []);
@@ -573,6 +583,88 @@ const DashboardAdminPage = () => {
                 ))
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5" />
+                  Violations Overview
+                </CardTitle>
+                <CardDescription>Rule violations and incidents</CardDescription>
+              </div>
+              <Link href="/dashboard/admin/violations">
+                <Button variant="outline" size="sm">
+                  View All
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {violationsStats ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/20">
+                    <div className="text-xs text-muted-foreground">Critical</div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {violationsStats.severityCounts.find((s: any) => s.severity === 'critical')?.count || 0}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                    <div className="text-xs text-muted-foreground">Severe</div>
+                    <div className="text-2xl font-bold text-orange-600">
+                      {violationsStats.severityCounts.find((s: any) => s.severity === 'severe')?.count || 0}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+                    <div className="text-xs text-muted-foreground">Pending</div>
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {violationsStats.statusCounts.find((s: any) => s.status === 'pending')?.count || 0}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
+                    <div className="text-xs text-muted-foreground">Resolved</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {violationsStats.statusCounts.find((s: any) => s.status === 'resolved')?.count || 0}
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-3 border-t space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Fines</span>
+                    <span className="font-medium">₹{violationsStats.fineStats.total_fines || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Collected</span>
+                    <span className="font-medium text-green-600">₹{violationsStats.fineStats.collected_fines || 0}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Pending Fines</span>
+                    <span className="font-medium text-orange-600">{violationsStats.fineStats.pending_fines_count || 0}</span>
+                  </div>
+                </div>
+                {violationsStats.typeBreakdown.length > 0 && (
+                  <div className="pt-3 border-t">
+                    <div className="text-xs font-medium mb-2">Top Violations</div>
+                    <div className="space-y-2">
+                      {violationsStats.typeBreakdown.slice(0, 3).map((type: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground capitalize">
+                            {type.violation_type.replace('_', ' ')}
+                          </span>
+                          <span className="font-medium">{type.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">No violations data available</p>
+            )}
           </CardContent>
         </Card>
 

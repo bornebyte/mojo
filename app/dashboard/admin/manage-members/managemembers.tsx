@@ -110,31 +110,38 @@ export const columns: ColumnDef<UserPayload>[] = [
     },
     {
         accessorKey: "name",
-        header: "Name",
+        header: ({ column }) => {
+            return (
+                <Button
+                    variant="ghost"
+                    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                >
+                    Name
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                </Button>
+            )
+        },
         cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("name")}</div>
+            <div className="capitalize font-medium">{row.getValue("name")}</div>
         ),
     },
     {
-        accessorKey: "allocated_building",
-        header: "Building",
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("allocated_building") || "N/A"}</div>
-        ),
-    },
-    {
-        accessorKey: "allocated_floor",
-        header: "Floor",
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("allocated_floor") || "N/A"}</div>
-        ),
-    },
-    {
-        accessorKey: "allocated_room",
-        header: "Room",
-        cell: ({ row }) => (
-            <div className="capitalize">{row.getValue("allocated_room") || "N/A"}</div>
-        ),
+        accessorKey: "phone",
+        header: "Phone",
+        cell: ({ row }) => {
+            const phone = row.getValue("phone") as string;
+            return phone ? (
+                <a
+                    href={`tel:${phone}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {phone}
+                </a>
+            ) : (
+                <div className="text-muted-foreground">N/A</div>
+            );
+        },
     },
     {
         accessorKey: "role",
@@ -187,38 +194,35 @@ export const columns: ColumnDef<UserPayload>[] = [
         cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>,
     },
     {
-        accessorKey: "phone",
-        header: "Phone",
-        cell: ({ row }) => {
-            const phone = row.getValue("phone") as string;
-            return phone ? (
-                <a href={`tel:${phone}`} className="text-blue-500 hover:underline">
-                    {phone}
-                </a>
-            ) : (
-                <div>N/A</div>
-            );
-        },
+        accessorKey: "allocated_building",
+        header: "Building",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_building") || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "allocated_floor",
+        header: "Floor",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_floor") || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "allocated_room",
+        header: "Room",
+        cell: ({ row }) => (
+            <div className="capitalize">{row.getValue("allocated_room") || "N/A"}</div>
+        ),
     },
     {
         accessorKey: "usn_id",
-        header: "USN_ID",
+        header: "USN ID",
         cell: ({ row }) => <div>{row.getValue("usn_id") || "N/A"}</div>,
     },
     {
         accessorKey: "added_by_name",
-        header: "Added by Name",
+        header: "Added By",
         cell: ({ row }) => <div className="capitalize">{row.getValue("added_by_name") || "N/A"}</div>,
-    },
-    {
-        accessorKey: "added_by_id",
-        header: "Added by ID",
-        cell: ({ row }) => <div>{row.getValue("added_by_id") || "N/A"}</div>,
-    },
-    {
-        accessorKey: "added_by_role",
-        header: "Added by Role",
-        cell: ({ row }) => <div className="capitalize">{row.getValue("added_by_role") || "N/A"}</div>,
     },
     {
         accessorKey: "assigned_building",
@@ -251,58 +255,91 @@ export const columns: ColumnDef<UserPayload>[] = [
     {
         id: "actions",
         enableHiding: false,
-        header: "Actions",
         cell: ({ row, table }) => {
             const userdetail = row.original
             const meta = table.options.meta as TableMeta
 
             return (
-                <div className="flex items-center gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{userdetail.name}</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-xs text-muted-foreground">
-                                Email: {userdetail.email}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs text-muted-foreground">
-                                Phone: {userdetail.phone}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-xs text-muted-foreground">
-                                USN ID: {userdetail.usn_id || "N/A"}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-xs text-muted-foreground">
-                                Added By: {userdetail.added_by_name || "N/A"}
-                            </DropdownMenuItem>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                        <DropdownMenuLabel className="font-semibold">{userdetail.name}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Contact Info</DropdownMenuLabel>
+                        <DropdownMenuItem className="text-xs">
+                            📧 {userdetail.email}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-xs">
+                            📱 <a href={`tel:${userdetail.phone}`} className="text-blue-600 hover:underline">{userdetail.phone || "N/A"}</a>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {userdetail.role === "student" && (
+                            <>
+                                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Allocation</DropdownMenuLabel>
+                                <DropdownMenuItem className="text-xs">
+                                    🏢 Building: {userdetail.allocated_building || "N/A"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-xs">
+                                    🏠 Floor: {userdetail.allocated_floor || "N/A"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-xs">
+                                    🚪 Room: {userdetail.allocated_room || "N/A"}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                            </>
+                        )}
+                        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Other Info</DropdownMenuLabel>
+                        <DropdownMenuItem className="text-xs">
+                            USN ID: {userdetail.usn_id || "N/A"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-xs">
+                            Added By: {userdetail.added_by_name || "N/A"} ({userdetail.added_by_role || "N/A"})
+                        </DropdownMenuItem>
+                        {userdetail.role === "student" && (
                             <DropdownMenuItem className="text-xs text-muted-foreground">
                                 Warden: <WardenNameDisplay building={userdetail.allocated_building} floor={userdetail.allocated_floor} />
                             </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => meta?.onEdit(userdetail)}
-                    >
-                        <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive"
-                        onClick={() => meta?.onDelete(userdetail)}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </div>
+                        )}
+                        {userdetail.role === "warden" && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Warden Assignment</DropdownMenuLabel>
+                                <DropdownMenuItem className="text-xs">
+                                    🏢 Building: {userdetail.assigned_building || "N/A"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-xs">
+                                    🏠 Floors: {userdetail.assigned_floor ? (() => {
+                                        try {
+                                            return JSON.parse(userdetail.assigned_floor as string).join(', ');
+                                        } catch (e) {
+                                            return userdetail.assigned_floor;
+                                        }
+                                    })() : "N/A"}
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => meta?.onEdit(userdetail)}
+                        >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Edit User
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="cursor-pointer text-destructive focus:text-destructive"
+                            onClick={() => meta?.onDelete(userdetail)}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete User
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             )
         },
     },
@@ -316,12 +353,12 @@ export function ManageMembersTable({ data }: { data: UserPayload[] }) {
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>({
             "select": false,
-            "email": false,
-            "phone": false,
+            "email": true,
+            "allocated_building": false,
+            "allocated_floor": false,
+            "allocated_room": false,
             "usn_id": false,
             "added_by_name": false,
-            "added_by_id": false,
-            "added_by_role": false,
             "created_at": false,
             "assigned_building": false,
             "assigned_floor": false,

@@ -23,16 +23,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const formSchema = z.object({
     username: z.string().min(2, {
-        message: "User must be at least 2 characters.",
+        message: "Name must be at least 2 characters.",
+    }).max(100, {
+        message: "Name must not exceed 100 characters.",
     }),
     phone: z.string().min(10, {
-        message: "Phone number must be at least 10 characters.",
+        message: "Phone number must be at least 10 digits.",
+    }).max(15, {
+        message: "Phone number must not exceed 15 digits.",
+    }).regex(/^[0-9+\-\s()]+$/, {
+        message: "Phone number can only contain digits and common phone symbols.",
     }),
     email: z.string().email({
         message: "Invalid email address.",
-    }),
+    }).toLowerCase(),
     usn_id: z.string().min(4, {
         message: "USN ID must be at least 4 characters.",
+    }).max(20, {
+        message: "USN ID must not exceed 20 characters.",
     }),
     allocated_building: z.string().optional(),
     allocated_floor: z.string().optional(),
@@ -93,15 +101,19 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
     return (
         <Form {...form}>
             <p className="text-center text-xl font-bold mt-6 mb-6">Create Student Account</p>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="username"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Name</FormLabel>
+                            <FormLabel>Full Name *</FormLabel>
                             <FormControl>
-                                <Input placeholder="Student name here..." {...field} />
+                                <Input
+                                    placeholder="e.g., John Doe"
+                                    {...field}
+                                    autoComplete="name"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -112,9 +124,14 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
                     name="email"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>Email Address *</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="Student email here..." {...field} />
+                                <Input
+                                    type="email"
+                                    placeholder="e.g., john.doe@example.com"
+                                    {...field}
+                                    autoComplete="email"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -125,9 +142,14 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
                     name="phone"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Phone</FormLabel>
+                            <FormLabel>Phone Number *</FormLabel>
                             <FormControl>
-                                <Input type="text" placeholder="Student phone number here..." {...field} />
+                                <Input
+                                    type="tel"
+                                    placeholder="e.g., +1234567890"
+                                    {...field}
+                                    autoComplete="tel"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -138,9 +160,14 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
                     name="usn_id"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>USN ID</FormLabel>
+                            <FormLabel>USN ID *</FormLabel>
                             <FormControl>
-                                <Input type="text" placeholder="Student USN ID here..." {...field} />
+                                <Input
+                                    type="text"
+                                    placeholder="e.g., 1RV21CS001"
+                                    {...field}
+                                    autoComplete="off"
+                                />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -228,7 +255,15 @@ export default function AddStudentForm({ user, availableBuildingsAndFloors }: { 
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full"><CirclePlus />Add</Button>
+                <div className="pt-4">
+                    <Button type="submit" className="w-full" size="lg">
+                        <CirclePlus className="mr-2 h-4 w-4" />
+                        Create Student Account
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                        * Required fields. Password will be set to phone number by default.
+                    </p>
+                </div>
             </form>
         </Form>
     )

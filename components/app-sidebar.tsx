@@ -30,7 +30,8 @@ import {
     Bell,
     BarChart3,
     Megaphone,
-    AlertCircle
+    AlertCircle,
+    ShieldAlert
 } from "lucide-react"
 import UserContext from "@/app/context/UserContext";
 
@@ -60,6 +61,11 @@ const adminItems = [
         title: "Complaints",
         url: "/dashboard/admin/complaints",
         icon: AlertCircle,
+    },
+    {
+        title: "Violations",
+        url: "/dashboard/admin/violations",
+        icon: ShieldAlert,
     },
     {
         title: "View Menu",
@@ -133,6 +139,11 @@ const studentItems = [
         icon: AlertCircle,
     },
     {
+        title: "My Violations",
+        url: "/dashboard/student/violations",
+        icon: ShieldAlert,
+    },
+    {
         title: "Announcements",
         url: "/dashboard/announcements",
         icon: Bell,
@@ -164,6 +175,11 @@ const wardenItems = [
         title: "Complaints",
         url: "/dashboard/warden/complaints",
         icon: AlertCircle,
+    },
+    {
+        title: "Violations",
+        url: "/dashboard/warden/violations",
+        icon: ShieldAlert,
     },
     {
         title: "View Menu",

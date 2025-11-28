@@ -61,7 +61,8 @@ import {
   getUserRating,
   getMenuRatings
 } from "../../student/view-menu/actions"
-import { Menu } from "@/lib/types"
+import { Menu, UserPayload } from "@/lib/types"
+import { getFromCache, saveToCache } from "@/lib/cache-utils"
 
 type MenuWithId = Menu & { id: number }
 
@@ -125,8 +126,8 @@ const ViewMenuComponents = () => {
         setUserId(user.id || null)
         setUserName(user.name || user.usn_id || "")
       }
-      fetchMenus()
-      fetchMenuRatings()
+      fetchMenusWithCache(user?.role as UserPayload["role"])
+      fetchMenuRatingsWithCache(user?.role as UserPayload["role"])
     }
     init()
   }, [])
@@ -137,12 +138,24 @@ const ViewMenuComponents = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, typeFilter, dateFilter, dateRange, menus])
 
-  const fetchMenus = async () => {
+  const fetchMenusWithCache = async (role?: UserPayload["role"], forceRefresh = false) => {
     setLoading(true)
     try {
+      // Check cache first
+      if (!forceRefresh) {
+        const cached = getFromCache<MenuWithId[]>('canteen_menus', role)
+        if (cached) {
+          setMenus(cached)
+          setLoading(false)
+          return
+        }
+      }
+
+      // Fetch fresh data
       const result = await getAllMenus()
       if (result.success && result.data) {
         setMenus(result.data as MenuWithId[])
+        saveToCache('canteen_menus', result.data)
       } else {
         setMenus([])
       }
@@ -154,8 +167,18 @@ const ViewMenuComponents = () => {
     }
   }
 
-  const fetchMenuRatings = async () => {
+  const fetchMenuRatingsWithCache = async (role?: UserPayload["role"], forceRefresh = false) => {
     try {
+      // Check cache first
+      if (!forceRefresh) {
+        const cached = getFromCache<Record<number, MenuRating>>('canteen_menu_ratings', role)
+        if (cached) {
+          setMenuRatings(cached)
+          return
+        }
+      }
+
+      // Fetch fresh data
       const result = await getMenuRatings()
       if (result.success && result.data) {
         const ratingsMap: Record<number, MenuRating> = {}
@@ -167,10 +190,17 @@ const ViewMenuComponents = () => {
           }
         })
         setMenuRatings(ratingsMap)
+        saveToCache('canteen_menu_ratings', ratingsMap)
       }
     } catch (error) {
       console.error("Failed to fetch ratings:", error)
     }
+  }
+
+  const handleRefresh = async () => {
+    await fetchMenusWithCache(undefined, true)
+    await fetchMenuRatingsWithCache(undefined, true)
+    toast.success("Menus refreshed")
   }
 
   const applyFilters = () => {
@@ -215,7 +245,7 @@ const ViewMenuComponents = () => {
       const result = await deleteMenuById(id)
       if (result.success) {
         toast.success("Menu deleted successfully")
-        fetchMenus()
+        fetchMenusWithCache(undefined, true)
         setDeleteDialogOpen(false)
       } else {
         toast.error(result.message || "Failed to delete menu")
@@ -239,7 +269,7 @@ const ViewMenuComponents = () => {
       const result = await updateMenuById(editingMenu.id, { items: editItems })
       if (result.success) {
         toast.success("Menu updated successfully")
-        fetchMenus()
+        fetchMenusWithCache(undefined, true)
         setEditDialogOpen(false)
       } else {
         toast.error(result.message || "Failed to update menu")
@@ -290,7 +320,7 @@ const ViewMenuComponents = () => {
         setRatingDialogOpen(false)
         setRating(0)
         setComment("")
-        await fetchMenuRatings()
+        await fetchMenuRatingsWithCache(undefined, true)
       } else {
         toast.error(result.message)
       }
@@ -374,7 +404,7 @@ const ViewMenuComponents = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={fetchMenus} variant="outline">
+          <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>

@@ -107,3 +107,63 @@ export type AttendanceStats = {
   on_leave: number;
   attendance_rate: number;
 }
+
+export type Violation = {
+  id?: number;
+  student_id: number;
+  student_name: string;
+  student_usn: string;
+  student_building: string;
+  student_floor: string;
+  student_room: string;
+  violation_type: "smoking" | "alcohol" | "property_damage" | "noise_complaint" | "unauthorized_guest" | "curfew_violation" | "mess_misbehavior" | "ragging" | "other";
+  severity: "minor" | "moderate" | "severe" | "critical";
+  title: string;
+  description: string;
+  location?: string | null;
+  estimated_damage_cost?: number | null;
+  evidence_photo_url?: string | null;
+  status: "reported" | "under_review" | "action_taken" | "resolved" | "dismissed";
+  action_taken?: string | null;
+  fine_amount?: number | null;
+  fine_paid?: boolean;
+  reported_by_id: number;
+  reported_by_name: string;
+  reported_by_role: "admin" | "warden" | "student";
+  reviewed_by_id?: number | null;
+  reviewed_by_name?: string | null;
+  incident_date: string;
+  created_at?: string;
+  updated_at?: string;
+  resolved_at?: string | null;
+}
+
+export type ViolationStats = {
+  total_violations: number;
+  by_severity: {
+    minor: number;
+    moderate: number;
+    severe: number;
+    critical: number;
+  };
+  by_type: {
+    smoking: number;
+    alcohol: number;
+    property_damage: number;
+    noise_complaint: number;
+    unauthorized_guest: number;
+    curfew_violation: number;
+    mess_misbehavior: number;
+    ragging: number;
+    other: number;
+  };
+  by_status: {
+    reported: number;
+    under_review: number;
+    action_taken: number;
+    resolved: number;
+    dismissed: number;
+  };
+  total_fines: number;
+  fines_collected: number;
+}

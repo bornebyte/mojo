@@ -45,7 +45,8 @@ import {
     getUserRating,
     getMenuRatings
 } from "./actions"
-import { Menu } from "@/lib/types"
+import { Menu, UserPayload } from "@/lib/types"
+import { getFromCache, saveToCache } from "@/lib/cache-utils"
 
 type MenuWithId = Menu & { id: number }
 
@@ -87,6 +88,7 @@ const ViewMenuPage = () => {
     const [comment, setComment] = React.useState("")
     const [hoveredStar, setHoveredStar] = React.useState(0)
     const [submittingRating, setSubmittingRating] = React.useState(false)
+    const [userRole, setUserRole] = React.useState<UserPayload["role"]>()
 
     // Fetch user info and menus on component mount
     React.useEffect(() => {
@@ -95,9 +97,10 @@ const ViewMenuPage = () => {
             if (user) {
                 setUserId(user.id || null)
                 setUserName(user.name || user.usn_id || "")
+                setUserRole(user.role)
             }
-            await fetchMenus()
-            await fetchMenuRatings()
+            await fetchMenusWithCache(user?.role)
+            await fetchMenuRatingsWithCache(user?.role)
         }
         init()
     }, [])
@@ -108,12 +111,24 @@ const ViewMenuPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchQuery, typeFilter, dateFilter, menus])
 
-    const fetchMenus = async () => {
+    const fetchMenusWithCache = async (role?: UserPayload["role"], forceRefresh = false) => {
         setLoading(true)
         try {
+            // Check cache first
+            if (!forceRefresh) {
+                const cached = getFromCache<MenuWithId[]>('student_menus', role)
+                if (cached) {
+                    setMenus(cached)
+                    setLoading(false)
+                    return
+                }
+            }
+
+            // Fetch fresh data
             const result = await getAllMenus()
             if (result.success && result.data) {
                 setMenus(result.data as MenuWithId[])
+                saveToCache('student_menus', result.data)
             } else {
                 setMenus([])
             }
@@ -125,8 +140,18 @@ const ViewMenuPage = () => {
         }
     }
 
-    const fetchMenuRatings = async () => {
+    const fetchMenuRatingsWithCache = async (role?: UserPayload["role"], forceRefresh = false) => {
         try {
+            // Check cache first
+            if (!forceRefresh) {
+                const cached = getFromCache<Record<number, MenuRating>>('menu_ratings', role)
+                if (cached) {
+                    setMenuRatings(cached)
+                    return
+                }
+            }
+
+            // Fetch fresh data
             const result = await getMenuRatings()
             if (result.success && result.data) {
                 const ratingsMap: Record<number, MenuRating> = {}
@@ -138,10 +163,17 @@ const ViewMenuPage = () => {
                     }
                 })
                 setMenuRatings(ratingsMap)
+                saveToCache('menu_ratings', ratingsMap)
             }
         } catch (error) {
             console.error("Failed to fetch ratings:", error)
         }
+    }
+
+    const handleRefresh = async () => {
+        await fetchMenusWithCache(userRole, true)
+        await fetchMenuRatingsWithCache(userRole, true)
+        toast.success("Menus refreshed")
     }
 
     const applyFilters = () => {
@@ -212,7 +244,7 @@ const ViewMenuPage = () => {
                 setRatingDialogOpen(false)
                 setRating(0)
                 setComment("")
-                await fetchMenuRatings()
+                await fetchMenuRatingsWithCache(userRole, true)
             } else {
                 toast.error(result.message)
             }
@@ -259,7 +291,7 @@ const ViewMenuPage = () => {
                         View daily menus and rate your meals
                     </p>
                 </div>
-                <Button onClick={fetchMenus} variant="outline">
+                <Button onClick={handleRefresh} variant="outline">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                 </Button>

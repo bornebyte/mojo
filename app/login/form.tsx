@@ -28,7 +28,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { useContext, useState } from "react"
 import UserContext from "../context/UserContext"
-import { LogIn, Sparkles, Lock, User, Shield } from "lucide-react"
+import { LogIn, Sparkles, Lock, User, Shield, Hamburger } from "lucide-react"
 import Link from "next/link"
 
 const loginFormSchema = z.object({
@@ -193,7 +193,7 @@ export function LoginForm() {
                                                         </SelectItem>
                                                         <SelectItem value="canteen manager">
                                                             <div className="flex items-center gap-2">
-                                                                <Shield className="h-4 w-4 text-orange-500" />
+                                                                <Hamburger className="h-4 w-4 text-orange-500" />
                                                                 <span>Canteen Manager</span>
                                                             </div>
                                                         </SelectItem>
