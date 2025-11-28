@@ -39,7 +39,7 @@ export default function RootLayout({
         >
           <UserProvider>
             <NavigationMenuComponent />
-            {children}
+            <main className="pt-16">{children}</main>
             <Toaster position="top-center" />
           </UserProvider>
         </ThemeProvider>

@@ -62,9 +62,19 @@ const adminItems = [
         icon: AlertCircle,
     },
     {
+        title: "View Menu",
+        url: "/dashboard/canteen-manager/view-menu",
+        icon: UtensilsCrossed,
+    },
+    {
         title: "Announcements",
         url: "/dashboard/announcements",
         icon: Bell,
+    },
+    {
+        title: "Make Announcement",
+        url: "/dashboard/admin/announcements",
+        icon: Megaphone,
     },
 ]
 
@@ -156,6 +166,11 @@ const wardenItems = [
         icon: AlertCircle,
     },
     {
+        title: "View Menu",
+        url: "/dashboard/canteen-manager/view-menu",
+        icon: UtensilsCrossed,
+    },
+    {
         title: "Analytics",
         url: "/dashboard/warden/analytics",
         icon: BarChart3,
@@ -169,6 +184,11 @@ const wardenItems = [
         title: "View All Announcements",
         url: "/dashboard/announcements",
         icon: Bell,
+    },
+    {
+        title: "Make Announcement",
+        url: "/dashboard/warden/announcements",
+        icon: Megaphone,
     },
 ]
 

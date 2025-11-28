@@ -5,9 +5,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarTrigger />
-            <main className="w-full min-h-screen flex justify-center py-12 px-2">
-                {children}
+            <main className="w-full min-h-screen flex flex-col">
+                <div className="sticky top-16 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-2">
+                    <SidebarTrigger />
+                </div>
+                <div className="flex-1 flex justify-center py-6 px-2">
+                    {children}
+                </div>
             </main>
         </SidebarProvider>
     )

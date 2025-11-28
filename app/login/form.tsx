@@ -68,8 +68,10 @@ export function LoginForm() {
                 }
                 if (values.role === "canteen manager") {
                     router.push("/dashboard/canteen-manager")
+                    return;
                 }
                 router.push(`/dashboard/${values.role}`)
+                return;
             } else {
                 setIsLoading(false)
             }

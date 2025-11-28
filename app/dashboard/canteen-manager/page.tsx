@@ -46,10 +46,10 @@ const mealIcons = {
 }
 
 const mealColors = {
-  breakfast: "text-yellow-600 bg-yellow-50 border-yellow-200",
-  lunch: "text-green-600 bg-green-50 border-green-200",
-  snacks: "text-orange-600 bg-orange-50 border-orange-200",
-  dinner: "text-blue-600 bg-blue-50 border-blue-200",
+  breakfast: "text-yellow-400 dark:text-yellow-400 border-yellow-500/50 dark:border-yellow-500/50",
+  lunch: "text-green-400 dark:text-green-400 border-green-500/50 dark:border-green-500/50",
+  snacks: "text-orange-400 dark:text-orange-400 border-orange-500/50 dark:border-orange-500/50",
+  dinner: "text-blue-400 dark:text-blue-400 border-blue-500/50 dark:border-blue-500/50",
 }
 
 const DashboardCanteenManagerPage = () => {
